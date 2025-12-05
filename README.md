@@ -85,7 +85,7 @@ python scripts/run_search_o1.py \
 Here is an example of a small portion of the output this JSON gives. Here we see question, asnwer, output, pred_answer, and metrics. We will see this 10 times or what ever you set subset_num to. This gives the user a better understanding of the model's inputs, reasonings, outputs, and accuracy.
 
 
-
+![Repository Structure](outputexample.png)
 
 
 ## 📄 Citation
