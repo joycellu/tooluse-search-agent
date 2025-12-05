@@ -22,7 +22,7 @@ This repo uses UCSD's DSMLP-cluster implementation and our modifications to the 
 
 ## Repository Structure
 
--  `scripts/` is where  `run_search_o1.py` is stored, which handles query generation, retrieval, and model reasoning.  
+-  `scripts/` is where  `run_search_o1.py` is stored, which handles query generation, retrieval, and model reasoning.   Under scripts is also `evaluate.py`, where the actual evaluation of the model is conducted, and how we were able to do an error analysis, and understand how the models accuarcy.  
 - The `data/QA_Datasets` is where our data is stored under the file name `hotpotqa.json` 
 - The `models/` directory defines model loading and inference utilities for running **Qwen** or any other supported LLM.   
 - All produced outputs—such as **JSONL logs** of model thoughts, search calls, and final answers—are automatically stored in the `outputs/` directory for each dataset split.  
@@ -79,11 +79,10 @@ python scripts/run_search_o1.py \
   --bing_endpoint "https://google.serper.dev/search"
 ```
 
+
 ###6 Check Outputs Saved to `outputs/`
 
-
-
-
+Here is an example of a small portion of the output this JSON gives. Here we see question, asnwer, output, pred_answer, and metrics. We will see this 10 times or what ever you set subset_num to. This gives the user a better understanding of the model's inputs, reasonings, outputs, and accuracy.
 
 
 
