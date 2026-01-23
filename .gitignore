@@ -1,0 +1,9 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Local search cache
+cache/
+
+# Outputs (we DO want to track outputs)
+# (所以这里不要忽略 outputs)

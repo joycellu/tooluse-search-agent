@@ -424,3 +424,71 @@ def get_task_instruction_code(question, question_title=None, model_name=None):
         )
     return user_prompt
 
+
+# Jiaxin try reflection
+
+def get_search_o1_reflection_instruction(question, current_reasoning, MAX_SEARCH_LIMIT=3):
+    """
+    Reflection step for search-o1 loop.
+    The model should either:
+      - propose ONE new web search query using <|begin_search_query|> ... <|end_search_query|>
+      - or finalize with \\boxed{...}
+    """
+    user_prompt = (
+        "You are doing a SELF-REFLECTION step to improve answer reliability.\n\n"
+        "Rules:\n"
+        f"- You can use web search at most {MAX_SEARCH_LIMIT} times total.\n"
+        "- If you still need evidence, propose exactly ONE best next search query using:\n"
+        "  <|begin_search_query|> your query <|end_search_query|>\n"
+        "- If you already have enough evidence, output ONLY the final answer in \\boxed{...}.\n"
+        "- Do NOT output both a search query and a boxed answer in the same message.\n\n"
+        f"Question:\n{question}\n\n"
+        "Current reasoning / draft:\n"
+        f"{current_reasoning}\n\n"
+        "Now reflect: identify what is missing, then either propose ONE search query or finish.\n"
+    )
+    return user_prompt
+
+def get_search_o1_reflection_instruction_v2(
+    *,
+    question: str,
+    current_reasoning: str,
+    judge_prompt: str,
+    last_search_query: str,
+    search_results_preview: str,
+    remaining_searches: int,
+) -> str:
+    """
+    Reflection step after a search + judge.
+    Must output EITHER:
+      - exactly ONE new search query in <|begin_search_query|> ... <|end_search_query|>
+      - OR a final answer in \\boxed{...}
+    """
+    user_prompt = (
+        "You are doing a SELF-REFLECTION step to improve answer reliability.\n\n"
+        "You just performed a web search. A judge reviewed the search quality and decided whether to continue.\n\n"
+        "Strict Output Rules (VERY IMPORTANT):\n"
+        "1) Output EITHER:\n"
+        "   A) <|begin_search_query|> ONE query <|end_search_query|>\n"
+        "   OR\n"
+        "   B) ONLY \\boxed{FINAL_ANSWER}\n"
+        "2) Do NOT output both A and B.\n"
+        "3) Do NOT output multiple queries.\n"
+        "4) If you propose a new query, make it more targeted than the last query.\n\n"
+        f"Remaining search budget: {remaining_searches}\n\n"
+        "Question:\n"
+        f"{question}\n\n"
+        "Current reasoning / draft:\n"
+        f"{current_reasoning}\n\n"
+        "Last search query:\n"
+        f"{last_search_query}\n\n"
+        "Judge feedback (why the last search was good/bad, and what to improve):\n"
+        f"{judge_prompt}\n\n"
+        "Top search results preview (titles/snippets/urls, may be incomplete):\n"
+        f"{search_results_preview}\n\n"
+        "Now reflect:\n"
+        "- If the search is insufficient, propose ONE better next search query.\n"
+        "- If you already have enough evidence, finalize with \\boxed{...}.\n"
+    )
+    return user_prompt
+
