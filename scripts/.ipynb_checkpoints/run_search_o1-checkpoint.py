@@ -12,6 +12,8 @@ import argparse
 
 from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
+from judge import run_judge
+
 
 from bing_search import (
     bing_web_search, 
@@ -609,8 +611,9 @@ def main():
 
                 else:
                     # If no search query needs to be executed, mark the sequence as finished
-                    seq['finished'] = True
-                    print("Sequence marked as complete.")
+                     if not seq.get('force_answer', False):
+                        seq['finished'] = True
+                        print("Sequence marked as complete.")
 
             # Batch fetch all URLs at once to optimize speed
             if all_urls_to_fetch:
@@ -674,6 +677,56 @@ def main():
                         seq['prompt'] += append_text
                         seq['output'] += append_text
                         seq['history'].append(append_text)
+
+                        # ---------- JUDGE-BASED ROUTING (NEW) ----------
+                for seq in batch_sequences:
+                    # Short reasoning snapshot
+                    current_reasoning = seq['output'][-4000:]
+
+                    # Get documents for this sequence (same ordering as batch_sequences)
+                    idx = batch_sequences.index(seq)
+                    documents_for_judge = batch_documents[idx]
+
+                    # If docs are basically empty, just ask for more search
+                    if len(documents_for_judge) < 200:
+                        decision = "SEARCH_MORE"
+                    else:
+                        decision = run_judge(
+                            llm=llm,
+                            tokenizer=tokenizer,
+                            question=seq['item']['Question'],
+                            reasoning=current_reasoning,
+                            documents=documents_for_judge,
+                            search_count=seq['search_count'],
+                            max_search_limit=MAX_SEARCH_LIMIT,
+                        )
+
+                    print(f"[JUDGE] search_count={seq['search_count']} decision={decision}")
+
+                    if decision == "FINALIZE":
+                        seq['prompt'] += (
+                            "\n\n[SYSTEM]: You now have enough information to answer. "
+                            "Do NOT search again. "
+                            "Write the final answer to the question. "
+                            "Start your final answer with: 'The answer is'."
+                        )
+                        seq['force_answer'] = True
+
+                    elif decision == "SEARCH_MORE":
+                        seq['prompt'] += (
+                            "\n\n[SYSTEM]: The evidence is missing key facts. "
+                            "Generate a NEW and more precise search query that focuses "
+                            "on the missing information."
+                        )
+
+                    elif decision == "GIVE_UP":
+                        # For now, handle GIVE_UP conservatively like SEARCH_MORE
+                        seq['prompt'] += (
+                            "\n\n[SYSTEM]: You may still be missing information. "
+                            "Generate a new search query that targets the missing facts."
+                        )
+                        # Do NOT set force_answer here yet.
+                # ---------- END JUDGE-BASED ROUTING ----------
 
         # Check if all sequences are finished
         unfinished = [seq for seq in active_sequences if not seq['finished']]
