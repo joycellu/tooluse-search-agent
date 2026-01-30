@@ -1,3 +1,4 @@
+# run_search_o1.py
 import os
 import json
 import time
@@ -11,8 +12,6 @@ import argparse
 
 from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
-
-# --- IMPORTS FROM BOTH FILES ---
 from judge import run_judge
 
 from reflection import (
@@ -24,6 +23,7 @@ from reflection import (
     run_refine_extraction,
     run_presence_check
 )
+
 
 from bing_search import (
     bing_web_search, 
@@ -47,7 +47,6 @@ from prompts import (
     get_task_instruction_multi_choice, 
     get_task_instruction_code, 
 )
-
 
 # Define special tokens
 BEGIN_SEARCH_QUERY = "<|begin_search_query|>"
@@ -291,7 +290,6 @@ def main():
         gpu_memory_utilization=0.95,
     )
 
-    
     # ---------------------- Data Loading ----------------------
     with open(data_path, 'r', encoding='utf-8') as json_file:
         filtered_data = json.load(json_file)
@@ -433,8 +431,26 @@ def main():
     def replace_recent_steps(origin_str, replace_str):
         """
         Replaces specific steps in the original reasoning steps with new steps.
+        If a replacement step contains "DELETE THIS STEP", that step is removed.
+
+        Parameters:
+        - origin_str (str): The original reasoning steps.
+        - replace_str (str): The steps to replace or delete.
+
+        Returns:
+        - str: The updated reasoning steps after applying replacements.
         """
+
         def parse_steps(text):
+            """
+            Parses the reasoning steps from a given text.
+
+            Parameters:
+            - text (str): The text containing reasoning steps.
+
+            Returns:
+            - dict: A dictionary mapping step numbers to their content.
+            """
             step_pattern = re.compile(r"Step\s+(\d+):\s*")
             steps = {}
             current_step_num = None
@@ -443,6 +459,7 @@ def main():
             for line in text.splitlines():
                 step_match = step_pattern.match(line)
                 if step_match:
+                    # If there's an ongoing step, save its content
                     if current_step_num is not None:
                         steps[current_step_num] = "\n".join(current_content).strip()
                     current_step_num = int(step_match.group(1))
@@ -452,27 +469,38 @@ def main():
                     if current_step_num is not None:
                         current_content.append(line)
             
+            # Save the last step if any
             if current_step_num is not None:
                 steps[current_step_num] = "\n".join(current_content).strip()
             
             return steps
 
+        # Parse the original and replacement steps
         origin_steps = parse_steps(origin_str)
         replace_steps = parse_steps(replace_str)
 
+        # Apply replacements
         for step_num, content in replace_steps.items():
             if "DELETE THIS STEP" in content:
+                # Remove the step if it exists
                 if step_num in origin_steps:
                     del origin_steps[step_num]
             else:
+                # Replace or add the step
                 origin_steps[step_num] = content
 
+        # Sort the steps by step number
         sorted_steps = sorted(origin_steps.items())
+
+        # Reconstruct the reasoning steps as a single string
         new_reasoning_steps = "\n\n".join([f"{content}" for num, content in sorted_steps])
+
         return new_reasoning_steps
 
     # ---------------------- Initialize Collection Structure ----------------------
+    # Initialize a list to collect batch outputs
     batch_output_records = []
+
     start_time = time.time()
     turn = 0
 
@@ -499,75 +527,35 @@ def main():
             # Collect URLs to fetch across all sequences
             all_urls_to_fetch = set()
             url_snippets = {}
+            url_sequence_map = {}  # Map URL to list of sequences needing it
 
-            # Process each sequence
+            # Process each sequence and collect URLs
             for seq, out in zip(sequences_needing_generation, outputs):
                 text = out.outputs[0].text
                 seq['history'].append(text)
+                # Append generated text to prompt and output
                 seq['prompt'] += text
                 seq['output'] += text
 
+                # Extract search query
                 search_query = extract_between(text, BEGIN_SEARCH_QUERY, END_SEARCH_QUERY)
 
-                # If a search query is present
+                # If a search query is present and needs to be executed
                 if search_query and seq['output'].rstrip().endswith(END_SEARCH_QUERY):
                     if seq['search_count'] < MAX_SEARCH_LIMIT and search_query not in seq['executed_search_queries']:
-                        
-                        # =========================================================
-                        # [GATE 1] REFLECTION LOOP (Improve Query)
-                        # =========================================================
-                        MAX_RETRIES = 5
-                        attempt = 0
-                        
-                        while attempt < MAX_RETRIES:
-                            attempt += 1
-                            
-                            # Execute search, use cache if available
-                            if search_query in search_cache:
-                                results = search_cache[search_query]
-                                print(f"Using cached search results for query: \"{search_query}\"")
-                            else:
-                                try:
-                                    results = bing_web_search(search_query, bing_subscription_key, bing_endpoint, market='en-US', language='en')
-                                    search_cache[search_query] = results
-                                    print(f"Executed and cached search for query: \"{search_query}\"")
-                                except Exception as e:
-                                    print(f"Error during search query '{search_query}': {e}")
-                                    search_cache[search_query] = {}
-                                    results = {}
-                            
-                            # Judge the relevance of the snippet
-                            relevant_check = extract_relevant_info(results)
-                            is_relevant, reason = run_judge_snippet(
-                                llm,
-                                tokenizer,
-                                seq['item']['Question'], 
-                                seq['history'][-1] if seq['history'] else "",
-                                search_query, 
-                                relevant_check
-                            )
-                            
-                            if is_relevant:
-                                print("Search query is relevant.")
-                                break
-                            else:
-                                # Reflect and refine query
-                                if attempt < MAX_RETRIES:
-                                    print(f"Judge Rejected: {reason}")
-                                    new_q = run_reflection_query(
-                                        llm,
-                                        tokenizer,
-                                        seq['item']['Question'],
-                                        seq['history'][-1] if seq['history'] else "",
-                                        search_query,
-                                        reason
-                                    )
-                                    if new_q:
-                                        print(f"Gate 1 Refinement: '{search_query}' -> '{new_q}'")
-                                        search_query = new_q # Update for next loop iteration
-                                        seq['executed_search_queries'].add(search_query)
-                                    else:
-                                        break # Failed to generate new query
+                        # Execute search, use cache if available
+                        if search_query in search_cache:
+                            results = search_cache[search_query]
+                            print(f"Using cached search results for query: \"{search_query}\"")
+                        else:
+                            try:
+                                results = bing_web_search(search_query, bing_subscription_key, bing_endpoint, market='en-US', language='en')
+                                search_cache[search_query] = results
+                                print(f"Executed and cached search for query: \"{search_query}\"")
+                            except Exception as e:
+                                print(f"Error during search query '{search_query}': {e}")
+                                search_cache[search_query] = {}
+                                results = {}
 
                         # Extract relevant information from Bing search results
                         relevant_info = extract_relevant_info(results)[:top_k]
@@ -579,12 +567,13 @@ def main():
 
                         # Filter URLs that are not cached
                         urls_to_fetch_filtered = [u for u in urls_to_fetch if u not in url_cache]
-                        
+                        cached_urls = [u for u in urls_to_fetch if u in url_cache]
+
+                        # Store info for all_urls_to_fetch and url_snippets
                         for url in urls_to_fetch_filtered:
                             all_urls_to_fetch.add(url)
                             url_snippets[url] = snippets.get(url, "")
 
-                        # Prepare reasoning context
                         all_reasoning_steps = seq['output']
                         all_reasoning_steps = all_reasoning_steps.replace('\n\n', '\n').split("\n")
 
@@ -612,6 +601,7 @@ def main():
                         batch_search_queries.append(search_query)
                         batch_sequences.append(seq)
 
+                        # Update search count and executed queries
                         seq['search_count'] += 1
                         seq['executed_search_queries'].add(search_query)
 
@@ -630,28 +620,10 @@ def main():
                         print(f"Repeated search for query: \"{search_query}\"")
 
                 else:
-                    # =========================================================
-                    # [GATE 4] HALLUCINATION CHECK (Failure to Invoke Search)
-                    # =========================================================
-                    is_hallucinated = False
-                    
-                    # Only check if we haven't searched much yet (e.g., search_count == 0)
-                    if seq['search_count'] == 0: 
-                         is_hallucinated = run_hallucination_check(
-                             llm, tokenizer, seq['item']['Question'], seq['output'][-2000:]
-                         )
-    
-                    if is_hallucinated:
-                        print("Hallucination Detected! Forcing search...")
-                        limit_message = "\n[System: Your answer contains unverified factual claims. You must perform a search to verify them.]\n"
-                        seq['prompt'] += limit_message
-                        seq['output'] += limit_message
-                        seq['history'].append(limit_message)
-                        # Do not mark finished, run another turn.
-                    else:
-                        if not seq.get('force_answer', False):
-                            seq['finished'] = True
-                            print("Sequence marked as complete.")
+                    # If no search query needs to be executed, mark the sequence as finished
+                     if not seq.get('force_answer', False):
+                        seq['finished'] = True
+                        print("Sequence marked as complete.")
 
             # Batch fetch all URLs at once to optimize speed
             if all_urls_to_fetch:
@@ -661,16 +633,17 @@ def main():
                         list(all_urls_to_fetch),
                         use_jina=use_jina,
                         jina_api_key=jina_api_key,
+                        # snippets=url_snippets  # Do not pass snippets when updating url_cache directly
                     )
                     print(f"Fetched {len(fetched_contents)} URLs successfully.")
                 except Exception as e:
                     print(f"Error during batch URL fetching: {e}")
                     fetched_contents = {url: f"Error fetching URL: {e}" for url in all_urls_to_fetch}
-                
+                # Update cache with fetched contents
                 for url, content in fetched_contents.items():
                     url_cache[url] = content
 
-            # Prepare formatted documents
+            # After fetching, prepare formatted documents for batch processing
             for relevant_info in batch_relevant_info:
                 formatted_documents = ""
                 for i, doc_info in enumerate(relevant_info):
@@ -689,7 +662,7 @@ def main():
                     
                 batch_documents.append(formatted_documents)
 
-            # Webpage Analysis & Refinement & Judge
+            # After fetching, prepare for batch processing if there are any
             if batch_sequences:
                 print(f"Batch processing {len(batch_sequences)} sequences with generate_webpage_to_reasonchain_batch...")
                 webpage_analyses = generate_webpage_to_reasonchain_batch(
@@ -698,61 +671,34 @@ def main():
                     search_queries=batch_search_queries,
                     documents=batch_documents,
                     dataset_name=dataset_name,
-                    batch_output_records=batch_output_records,
+                    batch_output_records=batch_output_records,  # Pass the collection list
                     max_tokens=max_tokens,
                 )
                 print("Batch generation completed, assigning outputs to sequences...")
 
-                for i, (seq, analysis) in enumerate(zip(batch_sequences, webpage_analyses)):
-                    search_query = batch_search_queries[i]
-                    all_docs_context = batch_documents[i]
-
-                    # =========================================================
-                    # [GATE 2] REFINEMENT / LAZY READING CHECK
-                    # =========================================================
-                    # If model returns little/no info, but we have documents.
-                    if ("No helpful information found" in analysis or len(analysis) < 50) and all_docs_context:
-                        # Run Presence Check
-                        is_present = run_presence_check(llm, tokenizer, search_query, all_docs_context)
-                        
-                        if is_present:
-                            print(f"Lazy Reading Detected! Re-extracting for query: {search_query}")
-                            refined_analysis = run_refine_extraction(
-                                llm, 
-                                tokenizer, 
-                                seq['item']['Question'],
-                                search_query, 
-                                all_docs_context, 
-                                analysis
-                            )
-                            if len(refined_analysis) > len(analysis):
-                                print("Refinement successful. Updating analysis.")
-                                analysis = refined_analysis
-                                
-                    # Update sequence with analysis
+                for seq, analysis in zip(batch_sequences, webpage_analyses):
                     if isinstance(analysis, str):
-                        if BEGIN_SEARCH_RESULT not in analysis: # Safety check
-                            append_text = f"\n\n{BEGIN_SEARCH_RESULT}{analysis}{END_SEARCH_RESULT}\n\n"
-                        else:
-                            append_text = analysis
-                        
+                        append_text = f"\n\n{BEGIN_SEARCH_RESULT}{analysis}{END_SEARCH_RESULT}\n\n"
                         seq['prompt'] += append_text
                         seq['output'] += append_text
                         seq['history'].append(append_text)
                     else:
-                        # Fallback if analysis format is unexpected
-                        append_text = replace_recent_steps(seq['output'], str(analysis))
+                        append_text = replace_recent_steps(seq['output'], analysis)
                         seq['prompt'] += append_text
                         seq['output'] += append_text
                         seq['history'].append(append_text)
 
-                    # =========================================================
-                    # [GATE 3] HIGH-LEVEL JUDGE (ROUTING)
-                    # =========================================================
+                        # ---------- JUDGE-BASED ROUTING (NEW) ----------
+                for seq in batch_sequences:
+                    # Short reasoning snapshot
                     current_reasoning = seq['output'][-4000:]
-                    
+
+                    # Get documents for this sequence (same ordering as batch_sequences)
+                    idx = batch_sequences.index(seq)
+                    documents_for_judge = batch_documents[idx]
+
                     # If docs are basically empty, just ask for more search
-                    if len(all_docs_context) < 200:
+                    if len(documents_for_judge) < 200:
                         decision = "SEARCH_MORE"
                     else:
                         decision = run_judge(
@@ -760,7 +706,7 @@ def main():
                             tokenizer=tokenizer,
                             question=seq['item']['Question'],
                             reasoning=current_reasoning,
-                            documents=all_docs_context,
+                            documents=documents_for_judge,
                             search_count=seq['search_count'],
                             max_search_limit=MAX_SEARCH_LIMIT,
                         )
@@ -784,10 +730,13 @@ def main():
                         )
 
                     elif decision == "GIVE_UP":
+                        # For now, handle GIVE_UP conservatively like SEARCH_MORE
                         seq['prompt'] += (
                             "\n\n[SYSTEM]: You may still be missing information. "
                             "Generate a new search query that targets the missing facts."
                         )
+                        # Do NOT set force_answer here yet.
+                # ---------- END JUDGE-BASED ROUTING ----------
 
         # Check if all sequences are finished
         unfinished = [seq for seq in active_sequences if not seq['finished']]
@@ -801,9 +750,11 @@ def main():
     total_time = time.time() - start_time
 
     # ---------------------- Save Batch Output Records to JSON File ----------------------
+    # Define output JSON file path
     t = time.localtime()
     batch_output_file = os.path.join(output_dir, f'{split}.{t.tm_mon}.{t.tm_mday},{t.tm_hour}:{t.tm_min}.info_extract.json')
 
+    # Save batch_output_records to JSON file
     with open(batch_output_file, 'w', encoding='utf-8') as f:
         json.dump(batch_output_records, f, ensure_ascii=False, indent=2)
 
@@ -817,6 +768,7 @@ def main():
 
     # ---------------------- Update Search and URL Cache ----------------------
     print('Updating Search and URL Cache...')
+    # Load existing caches or initialize empty dictionaries
     if os.path.exists(search_cache_path):
         with open(search_cache_path, 'r', encoding='utf-8') as f:
             search_cache_new = json.load(f)

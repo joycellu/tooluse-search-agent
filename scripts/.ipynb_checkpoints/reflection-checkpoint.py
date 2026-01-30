@@ -1,0 +1,264 @@
+from vllm import SamplingParams
+
+# PROMPTS
+
+# dummy judge prompt
+JUDGE_SNIPPET_PROMPT = """
+You are a strict relevance evaluator for web search results.
+
+User Question: {question}
+Search Query Used: {query}
+Search Results (Snippets):
+{snippets}
+
+Task: Decide if these snippets are RELEVANT and likely helpful for answering the user question and the search query.
+
+Guidelines:
+- Say YES only if at least one snippet clearly mentions the key entities and topic needed to answer the question.
+- If snippets are about the wrong entity, wrong time period, or unrelated topic, say NO.
+
+Output exactly one of:
+"JUDGEMENT: YES"
+or
+"JUDGEMENT: NO | Reason: [short explanation]"
+"""
+
+
+#### FOR REFLECTION 1 -- START
+REFLECTION_QUERY_PROMPT = """
+You are improving a web search query for a question-answering agent.
+
+User Question: {question}
+Previous Search Query (failed): {query}
+Judge's Complaint: {reason}
+
+Task:
+1. Identify what specific information is still missing (e.g., a date, definition, formula, name, comparison).
+2. Propose ONE new, more precise search query that directly targets the missing information.
+3. Avoid vague queries. Include key entities, and, if relevant, time ranges or domains.
+
+Output Format (exactly):
+Reasoning: [very brief explanation of how you fix the query]
+New_Query: [the new query string, 5–20 words, no quotes]
+"""
+#### FOR REFLECTION 1 -- END
+
+#### FOR EXTRACTION REFINEMENT (Case study error 2: Information loss during extraction) -- START
+PRESENCE_CHECK_PROMPT = """
+You are a Fact Validator.
+User Query: "{search_query}"
+Search Results:
+"{document_text}"
+
+Task: Determine if the answer to the query is present ANYWHERE in these search results.
+- If the text contains specific facts, numbers, or names that answer the query, output "STATUS: PRESENT".
+- If the text is irrelevant or does not contain the answer, output "STATUS: ABSENT".
+"""
+
+REFINE_EXTRACTION_PROMPT = """
+You previously missed the information in these documents.
+User Query: "{search_query}"
+Search Results:
+"{document_text}"
+
+Validator Note: The answer IS present in these results.
+
+Task: Read the results again carefully and extract the EXACT answer to the query.
+- Start your response with "**Final Information**" followed by the extracted facts.
+- If you still cannot find it (despite the note), output "No helpful information found."
+"""
+#### FOR EXTRACTION REFINEMENT (Case study error 2: Information loss during extraction) -- END
+
+#### FOR FINAL REFLECTION -- START
+JUDGE_CONTENT_PROMPT = """
+You are evaluating if a search result was successful.
+
+Search Query Used: {search_query}
+Reasoning Context: ...{history}...
+Extracted Information: {info}
+
+Task: Did this search successfully find the information requested in the **Search Query**?
+(Do NOT judge based on whether it fully answers the ultimate user question, only if it satisfied the immediate search intent.)
+
+- If the search query asked for "CEO name" and the text contains "Tim Cook", say YES.
+- If the text is irrelevant to the query, say NO.
+
+Output format:
+"JUDGEMENT: YES" 
+or 
+"JUDGEMENT: NO | Reason: [Explain exactly what is missing]"
+"""
+
+REFLECTION_CONTENT_PROMPT = """
+The extracted information was judged as INSUFFICIENT to answer the search query.
+User Question: {question}
+Search Query: {search_query}
+Judge's Verdict: {reason}
+Current Info: {info}
+
+Task:
+1. Analyze what specific information is still missing.
+2. Propose a high-level SEARCH DIRECTION or STRATEGY to find this missing information.
+
+Output Format:
+Analysis: [What is missing]
+Search_Direction: [Strategic advice for the next step]
+"""
+#### FOR FINAL REFLECTION -- END
+
+#### FOR HALLUCINATION CHECK (Case Study Error 1: Failure to Search When Needed) -- START
+HALLUCINATION_CHECK_PROMPT = """
+You are a Fact Checker.
+User Question: {question}
+Proposed Final Answer: {final_answer}
+
+Task: Does this answer contain specific factual claims (dates, numbers, names) that appear UNVERIFIED or possibly hallucinated given the context?
+- If the answer is safe or generic, say NO.
+- If the answer makes specific claims without clear evidence in reasoning history, say YES.
+
+Output exactly: "JUDGEMENT: YES" or "JUDGEMENT: NO"
+"""
+#### FOR HALLUCINATION CHECK (Case Study Error 1: Failure to Search When Needed) -- END
+
+
+# Logic functions
+
+# dummy judge function
+def run_judge_snippet(llm, tokenizer, question, history, query, results):
+    snippets = "\n".join([f"- {r.get('snippet', '')[:150]}" for r in results[:5]])
+    history_short = history[-500:] if history else ""
+    
+    prompt_content = JUDGE_SNIPPET_PROMPT.format(
+        question=question, history=history_short, query=query, snippets=snippets
+    )
+    
+    messages = [{"role": "user", "content": prompt_content}]
+    text_input = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    
+    output = llm.generate([text_input], sampling_params=SamplingParams(max_tokens=500, temperature=0.1))
+    response = output[0].outputs[0].text
+    
+    if "JUDGEMENT: YES" in response:
+        return True, None
+    elif "JUDGEMENT: NO" in response:
+        try: reason = response.split("| Reason:")[1].strip()
+        except: reason = "Results appeared irrelevant."
+        return False, reason
+    return True, None 
+
+#### FOR REFLECTION 1 -- START
+def run_reflection_query(llm, tokenizer, question, history, failed_query, failure_reason):
+    history_short = history[-500:] if history else ""
+    prompt_content = REFLECTION_QUERY_PROMPT.format(
+        question=question, history=history_short, query=failed_query, reason=failure_reason
+    )
+    
+    messages = [{"role": "user", "content": prompt_content}]
+    text_input = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    
+    output = llm.generate(
+        [text_input],
+        sampling_params=SamplingParams(max_tokens=80, temperature=0.3, top_p=0.9),
+    )
+    response = output[0].outputs[0].text
+
+    if "New_Query:" in response:
+        try:
+            new_q = response.split("New_Query:")[1].strip().split('\n')[0]
+            # basic cleanup; keep it shortish
+            return new_q[:256]
+        except:
+            return None
+    return None
+#### FOR REFLECTION 1 -- END
+
+#### FOR EXTRACTION REFINEMENT (Case study error 2: Information loss during extraction) -- START
+def run_presence_check(llm, tokenizer, search_query, document_text):
+    """Checks if info exists in the batch of docs (Boolean check)."""
+    # Truncate to ~30k chars (approx 7-8k tokens) to fit in context while covering most docs
+    short_doc = document_text[:30000] 
+    prompt_content = PRESENCE_CHECK_PROMPT.format(
+        search_query=search_query, 
+        document_text=short_doc
+    )
+    
+    messages = [{"role": "user", "content": prompt_content}]
+    text_input = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    
+    output = llm.generate([text_input], sampling_params=SamplingParams(max_tokens=10, temperature=0.1))
+    response = output[0].outputs[0].text
+    
+    return "STATUS: PRESENT" in response
+
+def run_refine_extraction(llm, tokenizer, question, search_query, document_text, previous_extraction):
+    """Forces a re-read of the documents with awareness of previous extraction."""
+    prompt_content = REFINE_EXTRACTION_PROMPT.format(
+        search_query=search_query,
+        document_text=document_text[:35000],
+    )
+    # If you want to incorporate question/previous_extraction, extend the prompt here.
+
+    messages = [{"role": "user", "content": prompt_content}]
+    text_input = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    output = llm.generate([text_input], sampling_params=SamplingParams(max_tokens=1500, temperature=0.5))
+    return output[0].outputs[0].text
+
+    
+    # Increase max_tokens slightly to allow for a full explanation
+    output = llm.generate([text_input], sampling_params=SamplingParams(max_tokens=1500, temperature=0.5))
+    return output[0].outputs[0].text
+#### FOR EXTRACTION REFINEMENT (Case study error 2: Information loss during extraction) -- END
+
+#### FOR FINAL REFLECTION -- START
+def run_judge_content(llm, tokenizer, question, search_query, history, extracted_info):
+    history_short = history[-500:] if history else ""
+    prompt_content = JUDGE_CONTENT_PROMPT.format(
+        search_query=search_query, 
+        history=history_short, 
+        info=extracted_info[:2000]
+    )
+    
+    messages = [{"role": "user", "content": prompt_content}]
+    text_input = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    
+    output = llm.generate([text_input], sampling_params=SamplingParams(max_tokens=100, temperature=0.1))
+    response = output[0].outputs[0].text
+    
+    if "JUDGEMENT: YES" in response:
+        return True, None
+    else:
+        try: reason = response.split("| Reason:")[1].strip()
+        except: reason = "Information was too vague or incomplete."
+        return False, reason
+
+def run_reflection_content(llm, tokenizer, question, search_query, extracted_info, failure_reason):
+    """Generates search direction."""
+    prompt_content = REFLECTION_CONTENT_PROMPT.format(
+        question=question, 
+        search_query=search_query,
+        info=extracted_info[:1000], 
+        reason=failure_reason
+    )
+    
+    messages = [{"role": "user", "content": prompt_content}]
+    text_input = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    
+    output = llm.generate([text_input], sampling_params=SamplingParams(max_tokens=300, temperature=0.7))
+    return output[0].outputs[0].text.strip()
+#### FOR FINAL REFLECTION -- END
+
+#### FOR HALLUCINATION CHECK (Case Study Error 1: Failure to Search When Needed) -- START
+def run_hallucination_check(llm, tokenizer, question, final_answer):
+    """Checks for uncited claims."""
+    prompt_content = HALLUCINATION_CHECK_PROMPT.format(
+        question=question, final_answer=final_answer[:2000]
+    )
+    
+    messages = [{"role": "user", "content": prompt_content}]
+    text_input = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    
+    output = llm.generate([text_input], sampling_params=SamplingParams(max_tokens=50, temperature=0.1))
+    response = output[0].outputs[0].text
+    
+    return "JUDGEMENT: YES" in response
+#### FOR HALLUCINATION CHECK (Case Study Error 1: Failure to Search When Needed) -- END
