@@ -2,7 +2,6 @@ from vllm import SamplingParams
 
 # PROMPTS
 
-# dummy judge prompt
 JUDGE_SNIPPET_PROMPT = """
 You are a relevance evaluator.
 User Question: {question}
@@ -59,38 +58,48 @@ Task: Read the results again carefully and extract the EXACT answer to the query
 
 #### FOR FINAL REFLECTION -- START
 JUDGE_CONTENT_PROMPT = """
-You are evaluating if a search result was successful.
+You are evaluating the utility of a search result.
 
 Search Query Used: {search_query}
-Reasoning Context: ...{history}...
 Extracted Information: {info}
 
-Task: Did this search successfully find the information requested in the **Search Query**?
-(Do NOT judge based on whether it fully answers the ultimate user question, only if it satisfied the immediate search intent.)
+Task: Did this search provide ANY useful information, context, or new entities to investigate?
 
-- If the search query asked for "CEO name" and the text contains "Tim Cook", say YES.
-- If the text is irrelevant to the query, say NO.
+Criteria for "YES":
+1. Direct Answer found.
+2. **Partial Clues found** (e.g., found a book title that *might* be it, even if unverified).
+3. **Correction found** (e.g., "The author is NOT X, but Y").
+
+Criteria for "NO":
+1. "No helpful information found."
+2. Completely irrelevant spam.
 
 Output format:
 "JUDGEMENT: YES" 
 or 
-"JUDGEMENT: NO | Reason: [Explain exactly what is missing]"
+"JUDGEMENT: NO | Reason: [Explain exactly why it failed]"
 """
 
 REFLECTION_CONTENT_PROMPT = """
-The extracted information was judged as INSUFFICIENT to answer the search query.
+The previous search for "{search_query}" failed or yielded insufficient results.
 User Question: {question}
-Search Query: {search_query}
-Judge's Verdict: {reason}
-Current Info: {info}
+Current Status: {info}
+Failure Reason: {reason}
 
-Task:
-1. Analyze what specific information is still missing.
-2. Propose a high-level SEARCH DIRECTION or STRATEGY to find this missing information.
+Task: Diagnose the failure and generate a precise follow-up search query.
+
+1. **Analyze:** Why did this search fail? (e.g., Too specific? Too broad? Wrong entity? Concept needs splitting?)
+2. **Align:** How does fixing this help answer the original User Question?
+3. **Act:** Generate the EXACT query string to try next.
+
+Strategies:
+- **If too specific/no results:** Broaden to the category (e.g., "Science fiction book series with alien slavery").
+- **If results are generic:** Add a specific attribute (e.g., "Author of Animorphs birth year").
+- **If complex comparison:** Split into single-fact queries (e.g., Search for Person A first).
 
 Output Format:
-Analysis: [What is missing]
-Search_Direction: [Strategic advice for the next step]
+Analysis: [Why it failed and what we need]
+Next_Query: [The single, optimized query string]
 """
 #### FOR FINAL REFLECTION -- END
 
@@ -111,7 +120,6 @@ Output exactly: "JUDGEMENT: YES" or "JUDGEMENT: NO"
 
 # Logic functions
 
-# dummy judge function
 def run_judge_snippet(llm, tokenizer, question, history, query, results):
     snippets = "\n".join([f"- {r.get('snippet', '')[:150]}" for r in results[:5]])
     history_short = history[-500:] if history else ""
@@ -239,4 +247,3 @@ def run_hallucination_check(llm, tokenizer, question, final_answer):
     response = output[0].outputs[0].text
     
     return "JUDGEMENT: YES" in response
-#### FOR HALLUCINATION CHECK (Case Study Error 1: Failure to Search When Needed) -- END

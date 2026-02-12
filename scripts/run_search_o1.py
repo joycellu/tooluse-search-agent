@@ -1,4 +1,4 @@
-  # run_search_o1.py
+# run_search_o1.py
 import os
 import json
 import time
@@ -12,6 +12,7 @@ import argparse
 
 from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
+# from judge import run_judge
 
 from reflection import (
     run_judge_snippet,
@@ -52,6 +53,7 @@ BEGIN_SEARCH_QUERY = "<|begin_search_query|>"
 END_SEARCH_QUERY = "<|end_search_query|>"
 BEGIN_SEARCH_RESULT = "<|begin_search_result|>"
 END_SEARCH_RESULT = "<|end_search_result|>"
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run Search O1 for various datasets and models.")
@@ -548,66 +550,21 @@ def main():
                 # If a search query is present and needs to be executed
                 if search_query and seq['output'].rstrip().endswith(END_SEARCH_QUERY):
                     if seq['search_count'] < MAX_SEARCH_LIMIT and search_query not in seq['executed_search_queries']:
-                        # NEW STARTS
-                        # loop until Judge says YES or retries expire.
                         
-                        MAX_RETRIES = 5
-                        attempt = 0
-                        is_final_query_good = False
-                        
-                        while attempt < MAX_RETRIES:
-                            attempt += 1
-                            # NEW ENDS
-                            
-                            # Execute search, use cache if available
-                            if search_query in search_cache:
-                                results = search_cache[search_query]
-                                print(f"Using cached search results for query: \"{search_query}\"")
-                            else:
-                                try:
-                                    results = bing_web_search(search_query, bing_subscription_key, bing_endpoint, market='en-US', language='en')
-                                    search_cache[search_query] = results
-                                    print(f"Executed and cached search for query: \"{search_query}\"")
-                                except Exception as e:
-                                    print(f"Error during search query '{search_query}': {e}")
-                                    search_cache[search_query] = {}
-                                    results = {}
+                        # Execute search, use cache if available
+                        if search_query in search_cache:
+                            results = search_cache[search_query]
+                            print(f"Using cached search results for query: \"{search_query}\"")
+                        else:
+                            try:
+                                results = bing_web_search(search_query, bing_subscription_key, bing_endpoint, market='en-US', language='en')
+                                search_cache[search_query] = results
+                                print(f"Executed and cached search for query: \"{search_query}\"")
+                            except Exception as e:
+                                print(f"Error during search query '{search_query}': {e}")
+                                search_cache[search_query] = {}
+                                results = {}
 
-                            
-                            # NEW STARTS
-                            # dummy judge part
-                            relevant_check = extract_relevant_info(results)
-                            is_relevant, reason = run_judge_snippet(
-                                llm,
-                                tokenizer,
-                                seq['item']['Question'], 
-                                seq['history'][-1] if seq['history'] else "",
-                                search_query, 
-                                relevant_check
-                            )
-                            
-                            if is_relevant:
-                                print("Search query is relevant.")
-                                break
-                            else:
-                                # reflect part
-                                if attempt < MAX_RETRIES:
-                                    print(f"Judge Rejected: {reason}")
-                                    new_q = run_reflection_query(
-                                        llm,
-                                        tokenizer,
-                                        seq['item']['Question'],
-                                        seq['history'][-1] if seq['history'] else "",
-                                        search_query,
-                                        reason
-                                    )
-                                    if new_q:
-                                        print(f"Gate 1 Refinement: '{search_query}' -> '{new_q}'")
-                                        search_query = new_q # Update for next loop iteration
-                                        seq['executed_search_queries'].add(search_query)
-                                    else:
-                                        break # Failed to generate new query
-                        # NEW ENDS
                                         
                         # Extract relevant information from Bing search results
                         relevant_info = extract_relevant_info(results)[:top_k]
@@ -673,7 +630,7 @@ def main():
 
                 else:
                     # =========================================================
-                    # [NEW] HALLUCINATION CHECK (Failure to Invoke Search)
+                    # [NEW] HALLUCINATION CHECK (Case study error 1: Failure to Invoke Search)
                     # =========================================================
                     # If model wants to finish (no search query), check if it should have searched.
                     
@@ -750,32 +707,30 @@ def main():
 
                 for i, (seq, analysis) in enumerate(zip(batch_sequences, webpage_analyses)):
 
-                    # Get the Search Query used for this sequence
+                    # Get the search Query used for this sequence
                     search_query = batch_search_queries[i]
                     
                     # Get the full context (All 10 pages) used in the original attempt
-                    # This ensures we check every page, not just the first one.
                     all_docs_context = batch_documents[i]
     
                     # ---------------------------------------------------------
-                    # [NEW] EXTRACTION REFINEMENT LOOP
+                    # [NEW] EXTRACTION REFINEMENT LOOP (Case study error 2: Information loss during extraction)
                     # ---------------------------------------------------------
-                    # Condition: Model returned little/no info, but we have documents.
-                    if ("No helpful information found" in analysis or len(analysis) < 50) and all_docs_context:
+                    # Condition: Model returned little/no info, but we have relevant documents
+                    if ("No helpful information found" in analysis or len(analysis) < 100) and all_docs_context:
                         
-                        # Run Presence Check on the ALL documents
-                        # Checks if the answer exists anywhere in the provided text
+                        # run presence Check on the all documents, check if the answer exists anywhere in the provided text
                         is_present = run_presence_check(llm, tokenizer, search_query, all_docs_context)
                         
                         if is_present:
                             print(f"Lazy Reading Detected! Re-extracting for query: {search_query}")
                             
-                            # Force Re-Extraction
-                            # We pass 'all_docs_context' so it sees everything again
+                            # force Re-Extraction
+                            # we pass 'all_docs_context' so it sees everything again
                             refined_analysis = run_refine_extraction(llm, tokenizer, search_query, all_docs_context)
                             
                             # If the refinement found something useful, overwrite the bad analysis
-                            if "No helpful information found" not in refined_analysis and len(refined_analysis) > 50:
+                            if "No helpful information found" not in refined_analysis:
                                 print("Refinement Successful: Recovered missing info.")
                                 analysis = refined_analysis
                                 
@@ -803,10 +758,12 @@ def main():
                                 extracted_info=analysis, 
                                 failure_reason=fail_reason
                             )
-                            append_text += f"\n[System Warning: The information is insufficient. Reviewer Suggestion: {reflection}. Please use this to guide your next search.]\n"
+                            append_text += f"\n[Observation: The search results were limited. Suggestion: {reflection}]\n"
+        
+                            print(f"Reflected Strategy: {reflection}")
                         else:
-                            print("Extracted info sufficient")
-                            append_text += "\n[System: Verified relevant information found.]\n"
+                            print("Extracted info relevant")
+                            append_text += "\n[Observation: Useful information or candidates found. Proceed with verification or next step.]\n"
                         
                         seq['prompt'] += append_text
                         seq['output'] += append_text
@@ -816,6 +773,7 @@ def main():
                         seq['prompt'] += append_text
                         seq['output'] += append_text
                         seq['history'].append(append_text)
+
 
         # Check if all sequences are finished
         unfinished = [seq for seq in active_sequences if not seq['finished']]
@@ -869,3 +827,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
