@@ -110,6 +110,7 @@ def extract_text_from_url(url, use_jina=False, jina_api_key=None, snippet: Optio
             jina_headers = {
                 'Authorization': f'Bearer {jina_api_key}',
                 'X-Return-Format': 'markdown',
+                'X-Retain-Images': 'none'
                 # 'X-With-Links-Summary': 'true'
             }
             response = requests.get(f'https://r.jina.ai/{url}', headers=jina_headers).text
@@ -258,8 +259,7 @@ def bing_web_search(query, subscription_key, endpoint=None, market='en-US', lang
         "Content-Type": "application/json",
     }
     payload = {
-        "q": query,
-        "page": 2
+        "q": query
     }
 
     try:
