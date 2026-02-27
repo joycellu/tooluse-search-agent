@@ -1,0 +1,5 @@
+Title:
+<Think, Search, Correct: A Self-Reflection Mechanism for Adaptive Tool-Use Agents>
+
+Abstract:
+<An LLM that enhanced multi-step reasoning, fact judges, and reduces hallucinations using a self judge-reflective structure>
