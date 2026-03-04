@@ -12,19 +12,81 @@
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: Arial, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       margin: 0;
-      padding-top: 70px; /* 留出 navbar 空间 */
-      line-height: 1.6;
+      padding-top: 72px; /* leave space for navbar */
+      line-height: 1.7;
+      background:
+        radial-gradient(circle at top left, #e0f2fe 0, transparent 55%),
+        radial-gradient(circle at bottom right, #fee2e2 0, transparent 55%),
+        #f3f4f6;
+      color: #1f2933;
     }
 
-    h1 { color: #2c3e50; }
-    h2 { color: #34495e; margin-top: 40px; }
+    h1 {
+      color: #111827;
+      font-size: clamp(1.9rem, 2.6vw + 1.2rem, 2.7rem);
+      line-height: 1.2;
+      margin-top: 0;
+      margin-bottom: 0.75rem;
+    }
+
+    h2 {
+      color: #111827;
+      margin-top: 2.5rem;
+      margin-bottom: 0.75rem;
+      font-size: 1.35rem;
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 0.4rem;
+    }
+
+    h3 {
+      color: #1f2937;
+      margin-top: 1.75rem;
+      margin-bottom: 0.4rem;
+      font-size: 1.1rem;
+    }
+
+    p {
+      margin: 0 0 0.9rem;
+      font-size: 0.98rem;
+      color: #374151;
+    }
+
+    ul {
+      padding-left: 1.2rem;
+      margin: 0.25rem 0 1rem;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
 
     .container {
       max-width: 900px;
-      margin: auto;
-      padding: 40px;
+      margin: 24px auto 56px;
+      padding: 32px 32px 40px;
+      background: rgba(255, 255, 255, 0.97);
+      border-radius: 18px;
+      box-shadow:
+        0 18px 45px rgba(15, 23, 42, 0.12),
+        0 0 0 1px rgba(148, 163, 184, 0.18);
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 1.5rem 0;
     }
 
     /* ===== NAVBAR ===== */
@@ -32,9 +94,11 @@
       position: fixed;
       top: 0;
       width: 100%;
-      background-color: #2c3e50;
+      background: rgba(15, 23, 42, 0.96);
       padding: 10px 0;
       z-index: 1000;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(10px);
     }
 
     .nav-container {
@@ -51,7 +115,7 @@
       list-style: none;
       display: flex;
       justify-content: center;
-      gap: 30px;
+      gap: 26px;
       margin: 0;
       padding: 0;
     }
@@ -59,11 +123,33 @@
     nav ul li a {
       color: white;
       text-decoration: none;
-      font-weight: bold;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.03em;
+      padding: 6px 0;
+      position: relative;
+      transition: color 0.18s ease, transform 0.18s ease;
+    }
+
+    nav ul li a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -4px;
+      width: 0;
+      height: 2px;
+      background: #38bdf8;
+      transition: width 0.2s ease;
     }
 
     nav ul li a:hover {
-      text-decoration: underline;
+      color: #e0f2fe;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    nav ul li a:hover::after {
+      width: 100%;
     }
 
     /* ===== MOBILE MENU ===== */
@@ -83,12 +169,20 @@
       height: 3px;
       width: 24px;
       margin: 4px 0;
-      border-radius: 2px;
+      border-radius: 999px;
     }
 
     @media (max-width: 768px) {
-      body { padding-top: 60px; }
-      .container { padding: 20px; }
+      body { padding-top: 64px; }
+
+      .container {
+        margin: 18px auto 40px;
+        padding: 22px 18px 26px;
+        border-radius: 16px;
+        box-shadow:
+          0 12px 32px rgba(15, 23, 42, 0.25),
+          0 0 0 1px rgba(148, 163, 184, 0.16);
+      }
 
       nav { padding: 8px 0; }
 
@@ -97,17 +191,44 @@
         top: 48px;
         left: 0;
         width: 100%;
-        background: #2c3e50;
+        background: rgba(15, 23, 42, 0.98);
         flex-direction: column;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
         display: none;
-        padding: 16px 0;
-        border-top: 1px solid rgba(255,255,255,0.15);
+        padding: 14px 0 18px;
+        border-top: 1px solid rgba(148, 163, 184, 0.6);
+      }
+
+      nav ul li a {
+        width: 100%;
+        text-align: center;
+        padding: 8px 0;
       }
 
       nav ul.active { display: flex; }
       .menu-toggle { display: flex; }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+
+      h2 {
+        font-size: 1.1rem;
+      }
+
+      p, li {
+        font-size: 0.95rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body { padding-top: 60px; }
+
+      .container {
+        margin: 14px auto 32px;
+        padding-inline: 16px;
+      }
     }
   </style>
 </head>
