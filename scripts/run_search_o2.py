@@ -903,7 +903,7 @@ def parse_args():
     parser.add_argument(
         '--temperature',
         type=float,
-        default=0.7,
+        default=1,
         help="Sampling temperature."
     )
 
@@ -1087,7 +1087,7 @@ def main():
             prompts,
             sampling_params=SamplingParams(
                 max_tokens=max_tokens,
-                temperature=0.7,
+                temperature=1,
                 top_p=0.8,
                 top_k=20,
                 repetition_penalty=1.05,
@@ -1275,6 +1275,62 @@ def main():
 
         return new_reasoning_steps
 
+    def run_final_answer_extraction(seq, llm, tokenizer):
+    
+        # Extract grounded evidence only
+        evidence_blocks = []
+        for h in seq['history']:
+            if BEGIN_SEARCH_RESULT in h and END_SEARCH_RESULT in h:
+                evidence_blocks.append(h)
+    
+        evidence = "\n".join(evidence_blocks)
+    
+        question = seq['item']['Question']
+    
+        extraction_prompt = f"""
+    You have completed the search and reasoning process.
+    
+    Now extract the FINAL ANSWER using ONLY the grounded evidence below.
+    
+    Rules:
+    - Copy the exact answer from the evidence.
+    - Do NOT summarize.
+    - Do NOT approximate.
+    - Do NOT explain.
+    - Do not modify spelling.
+    - If a number appears, copy it exactly.
+    - Prefer the most precise value.
+        
+    Question:
+    {question}
+    
+    Evidence:
+    {evidence}
+    
+    Final Answer:
+    """
+    
+        prompt = tokenizer.apply_chat_template(
+            [{"role": "user", "content": extraction_prompt}],
+            tokenize=False,
+            add_generation_prompt=True
+        )
+    
+        output = llm.generate(
+            [prompt],
+            sampling_params=SamplingParams(
+                temperature=0,  # critical for extraction accuracy
+                top_p=1.0,
+                max_tokens=256,
+            )
+        )
+    
+        answer = output[0].outputs[0].text.strip()
+    
+        seq['prompt'] += f"\n\n[FINAL ANSWER]\n{answer}\n"
+        seq['output'] += f"\n\n[FINAL ANSWER]\n{answer}\n"
+        seq['history'].append(f"[FINAL ANSWER]\n{answer}")
+
     # ---------------------- Initialize Collection Structure ----------------------
     # Initialize a list to collect batch outputs
     batch_output_records = []
@@ -1426,9 +1482,12 @@ def main():
                         seq['history'].append(limit_message)
                         # Do not mark finished, run another turn.
                     else:
-                        # If no search query needs to be executed, mark the sequence as finished
+                        print("Running final grounded answer extraction...")
+                    
+                        run_final_answer_extraction(seq, llm, tokenizer)
+                    
                         seq['finished'] = True
-                        print("Sequence marked as complete.")
+                        print("Sequence marked as complete with final answer.")
 
             # Batch fetch all URLs at once to optimize speed
             if all_urls_to_fetch:
