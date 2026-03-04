@@ -8,8 +8,12 @@
   <style>
     * { box-sizing: border-box; }
 
-    /* Smooth scroll & prevent horizontal overflow */
-    html { scroll-behavior: smooth; overflow-x: hidden; }
+    /* Smooth scroll, offset for fixed nav when jumping to anchors */
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      scroll-padding-top: 72px;
+    }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       margin: 0;
@@ -183,7 +187,8 @@
     }
 
     @media (max-width: 768px) {
-      body { padding-top: 64px; }
+      html { scroll-padding-top: 88px; }
+      body { padding-top: 80px; }
 
       .container {
         margin: 18px auto 40px;
@@ -195,11 +200,14 @@
       }
 
       nav {
-        padding: 8px max(16px, env(safe-area-inset-right, 16px)) 8px max(16px, env(safe-area-inset-left, 16px));
+        padding: 12px max(16px, env(safe-area-inset-right, 16px)) 12px max(16px, env(safe-area-inset-left, 16px));
+        min-height: 56px;
       }
 
       .nav-container {
         padding: 0 12px 0 16px;
+        min-height: 44px;
+        width: 100%;
       }
 
       .menu-toggle {
@@ -209,7 +217,7 @@
 
       nav ul {
         position: absolute;
-        top: 48px;
+        top: 100%;
         left: 0;
         width: 100%;
         background: rgba(15, 23, 42, 0.98);
@@ -244,7 +252,8 @@
     }
 
     @media (max-width: 480px) {
-      body { padding-top: 60px; }
+      html { scroll-padding-top: 84px; }
+      body { padding-top: 76px; }
 
       .container {
         margin: 14px auto 32px;
@@ -258,7 +267,8 @@
 
     /* 375px: small phones (e.g. iPhone SE) */
     @media (max-width: 390px) {
-      body { padding-top: 58px; }
+      html { scroll-padding-top: 82px; }
+      body { padding-top: 74px; }
 
       .container {
         margin: 12px 0 28px;
@@ -267,7 +277,8 @@
       }
 
       nav {
-        padding: 8px max(14px, env(safe-area-inset-right, 14px)) 8px max(14px, env(safe-area-inset-left, 14px));
+        padding: 12px max(14px, env(safe-area-inset-right, 14px)) 12px max(14px, env(safe-area-inset-left, 14px));
+        min-height: 52px;
       }
 
       .nav-container { padding: 0 10px 0 14px; }
@@ -280,7 +291,7 @@
       }
 
       nav ul {
-        top: 46px;
+        top: 100%;
         padding: 12px 0 16px;
         gap: 8px;
       }
