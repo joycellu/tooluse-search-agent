@@ -199,13 +199,14 @@
           0 0 0 1px rgba(148, 163, 184, 0.16);
       }
 
+      /* 手机端：保持全宽，只把深蓝色条变细 */
       nav {
-        padding: 12px max(16px, env(safe-area-inset-right, 16px)) 12px max(16px, env(safe-area-inset-left, 16px));
-        min-height: 56px;
+        padding: 2px 0;
+        min-height: 32px;
       }
 
       .nav-container {
-        padding: 0 12px 0 16px;
+        padding: 0 8px;
         min-height: 44px;
         width: 100%;
       }
@@ -277,8 +278,8 @@
       }
 
       nav {
-        padding: 12px max(14px, env(safe-area-inset-right, 14px)) 12px max(14px, env(safe-area-inset-left, 14px));
-        min-height: 52px;
+        padding: 2px 0;
+        min-height: 28px;
       }
 
       .nav-container { padding: 0 10px 0 14px; }
@@ -307,12 +308,12 @@
   </style>
 </head>
 
-<body>
+<body id="top">
 
 <nav>
   <div class="nav-container">
     <ul id="navLinks">
-      <li><a href=".">Home</a></li>
+      <li><a href="#top">Home</a></li>
       <li><a href="#overview">Overview</a></li>
       <li><a href="#motivation">Motivation</a></li>
       <li><a href="#methods">Methods</a></li>
