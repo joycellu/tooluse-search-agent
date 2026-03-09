@@ -631,61 +631,67 @@
       Those new mechanisms helped to improve the performance like accuracy and F-1 scorfe in complex multi-hop queries.
     </p>
 
-    <div class="flow">
-      <div class="flow-step">Question</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step">Web Search / Retrieve</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step">Extraction refinement Loop</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step">Judge / Reflect</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step">Hallucination checks</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step">Better Follow-up Search or Final Answer</div>
+    <div style="display: flex; align-items: flex-start; margin: 2rem 0; gap: 1.2rem;">
+      <div class="flow" style="flex:1; min-width:230px; display: flex; flex-direction: column; align-items: center;">
+        <div class="flow-step" style="margin-bottom: 0.06rem;">Question</div>
+        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.06rem;">Web Search / Retrieve</div>
+        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.06rem;">Extraction refinement Loop</div>
+        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.06rem;">Judge / Reflect</div>
+        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.06rem;">Hallucination checks</div>
+        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.06rem;">Better Follow-up Search or Final Answer</div>
+      </div>
+      <div style="flex:1; text-align: right;">
+        <img src="Jiaxin_code\hallucination.png" alt="AI hallucination" style="max-width: 95%; border-radius: 14px; box-shadow: 0 4px 36px rgba(0,0,0,0.11); border: 1px solid #e5e7eb;">
+        <div class="subtle" style="margin-top: 0.5rem;">No more misleading outputs.</div>
+      </div>
     </div>
-  </section>
-
-  <div style="margin: 2rem 1rem; text-align: center;">
-    <img src="Jiaxin_code/pipeline.jfif" alt="Pipeline Diagram" style="max-width: 98%; border-radius: 14px; box-shadow: 0 4px 36px rgba(0,0,0,0.11); border: 1px solid #e5e7eb;">
-    <div class="subtle" style="margin-top: 0.5rem;">Figure: Our agent decision making pipeline.</div>
-  </div>
-
   <section id="problem">
     <h2>Problem Statement</h2>
     <p class="section-intro">
-      Our design is driven by three recurring failure modes we observed in the baseline agent. These failures matter
-      because multi-hop QA depends on the agent not just finding information, but finding the right information at the
-      right time and carrying it forward into later reasoning steps.
+      Our project begins with a simple observation from the Quarter 1 case study: although Search-o1 can
+      interleave reasoning with external retrieval, the baseline system still breaks down on multi-hop
+      questions in several recurring ways. On HotpotQA, these failures often led the agent to stop too early,
+      miss evidence that had already been retrieved, or continue searching without making meaningful progress.
     </p>
-
+  
     <div class="card-grid">
       <div class="info-card">
-        <h3>1. Unsupported final answers</h3>
+        <h3>1. Skipped search calls and unsupported answers</h3>
         <p>
-          The model sometimes tried to answer too early, relying on internal knowledge instead of retrieved evidence.
-          This produced fluent but weakly supported responses.
+          In many failed cases, the model did not take a needed search and instead answered directly from
+          its internal knowledge base (usually not enough or dated). This often produced misleading outputs.
         </p>
       </div>
+  
       <div class="info-card">
-        <h3>2. Information loss after retrieval</h3>
+        <h3>2. Information loss during extraction</h3>
         <p>
-          Even when the correct evidence appeared in fetched documents, the Reason-in-Documents step could miss it and
-          incorrectly conclude that no useful information was found.
+          Even when relevant documents or webpages were retrieved, the Reason-in-Documents step did not always preserve
+          the useful evidence. As a result, the agent could conclude that no helpful information had been found
+          even though the answer was already present in the fetched pages.
         </p>
       </div>
+  
       <div class="info-card">
-        <h3>3. Ineffective follow-up queries</h3>
+        <h3>3. Weak multi-hop search planning</h3>
         <p>
-          The baseline agent often failed to transform partial evidence into a strong next query, which limited its
-          ability to perform truly multi-hop search.
+          The baseline also struggled to turn partial evidence into a better next query. When an early search
+          step was incomplete or slightly off topic, the model often failed to correct course, which limited
+          its ability to perform effective multi-hop retrieval when solving complex questions.
         </p>
       </div>
+  
       <div class="info-card">
-        <h3>Why this matters</h3>
+        <h3>What do we do?</h3>
         <p>
-          If a search agent cannot verify claims, recover missed evidence, or refine its own next action, then extra tool
-          access does not translate into better reliability. Our work targets exactly that gap.
+          These patterns suggest that external search alone is not enough. A tool-use agent also needs mechanisms for
+          checking whether an answer is grounded, noticing when useful evidence has been missed, and reflecting
+          on whether the current search path should be revised. These are the goals our project is trying to solve.
         </p>
       </div>
     </div>
@@ -699,9 +705,8 @@
       compared with standard RAG, it supports iterative search instead of a single retrieve-then-answer pass.
     </p>
     <p>
-      In our implementation, the baseline uses a search API to retrieve web results, fetches web page content through
-      Jina parsing, and uses Qwen2.5-3B-Instruct as the reasoning backbone. This baseline gives us a strong starting
-      point, but it still leaves important control problems unresolved.
+      In our implementation, the baseline model uses a Jina search API (instaed of Bing Search API with Serper.dev in the original model) to retrieve web results, fetches web page content through
+      Jina parsing, and uses Qwen2.5-3B-Instruct as the reasoning backbone. 
     </p>
 
     <div class="timeline-grid">
@@ -718,7 +723,7 @@
         <ul>
           <li>Premature answer generation</li>
           <li>Missed evidence after retrieval</li>
-          <li>Weak search planning across multi-hop steps</li>
+          <li>Weak planning capacity in multi-hop search</li>
         </ul>
       </div>
     </div>
