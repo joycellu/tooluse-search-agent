@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Think, Search, Correct | DSC 180B Capstone</title>
+  <style>
+    :root {
+      --bg-1: #e0f2fe;
+      --bg-2: #f8fafc;
+      --nav: rgba(15, 23, 42, 0.96);
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #e5e7eb;
+      --card: rgba(255, 255, 255, 0.98);
+      --blue: #2563eb;
+      --blue-soft: #dbeafe;
+      --cyan: #38bdf8;
+      --green: #16a34a;
+      --green-soft: #dcfce7;
+      --amber: #d97706;
+      --amber-soft: #fef3c7;
+      --red: #dc2626;
+      --red-soft: #fee2e2;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(148, 163, 184, 0.18);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 96px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 28%),
+        linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 45%, #ffffff 100%);
+      padding-top: 82px;
+    }
+
+    h1, h2, h3, h4 {
+      color: #0f172a;
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: 2.35rem;
+      line-height: 1.15;
+      margin-bottom: 0.75rem;
+    }
+
+    h2 {
+      font-size: 1.65rem;
+      margin-top: 2.4rem;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 0.45rem;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.45rem;
+      color: #1f2937;
+    }
+
+    p {
+      margin: 0 0 0.9rem;
+      color: #374151;
+      font-size: 0.99rem;
+      overflow-wrap: break-word;
+    }
+
+    ul {
+      padding-left: 1.2rem;
+      margin: 0.3rem 0 1rem;
+    }
+
+    li {
+      margin-bottom: 0.38rem;
+      color: #374151;
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
+      word-break: break-word;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--line);
+      margin: 1.5rem 0;
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      max-width: 100vw;
+      background: var(--nav);
+      padding: 10px 0;
+      z-index: 1000;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-container {
+      max-width: 1080px;
+      margin: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 16px;
+      position: relative;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      gap: 22px;
+      margin: 0;
+      padding: 0;
+      flex-wrap: wrap;
+    }
+
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.03em;
+      padding: 6px 0;
+      position: relative;
+      transition: color 0.18s ease, transform 0.18s ease;
+    }
+
+    nav ul li a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -4px;
+      width: 0;
+      height: 2px;
+      background: var(--cyan);
+      transition: width 0.2s ease;
+    }
+
+    nav ul li a:hover {
+      color: #e0f2fe;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    nav ul li a:hover::after { width: 100%; }
+
+    .menu-toggle {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      flex-direction: column;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .menu-toggle span {
+      background: white;
+      height: 3px;
+      width: 24px;
+      margin: 4px 0;
+      border-radius: 999px;
+    }
+
+    .container {
+      max-width: 940px;
+      width: 100%;
+      margin: 24px auto 56px;
+      padding: 32px 32px 40px;
+      background: rgba(255, 255, 255, 0.97);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding-top: 0.2rem;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--blue);
+      background: var(--blue-soft);
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      margin-bottom: 0.9rem;
+    }
+
+    .lead {
+      font-size: 1.05rem;
+      color: #1f2937;
+      max-width: 780px;
+    }
+
+    .team-line {
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 1.2rem 0 1.4rem;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.78rem 1.05rem;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .button:hover {
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    .button.primary {
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
+    }
+
+    .button.secondary {
+      background: #eff6ff;
+      color: #1e3a8a;
+      border: 1px solid #bfdbfe;
+    }
+
+    .metric-grid,
+    .card-grid,
+    .case-grid,
+    .link-grid,
+    .team-grid,
+    .timeline-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .metric-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin: 1.35rem 0 0.4rem;
+    }
+
+    .card-grid,
+    .case-grid,
+    .team-grid,
+    .timeline-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 1rem;
+    }
+
+    .link-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 1rem;
+    }
+
+    .metric-card,
+    .info-card,
+    .case-card,
+    .team-card,
+    .link-card,
+    .timeline-card,
+    .table-wrap,
+    .note-box,
+    .callout {
+      background: var(--card);
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 1rem 1rem 1.05rem;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .metric-card {
+      padding: 1rem 0.95rem;
+    }
+
+    .metric-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.45rem;
+    }
+
+    .metric-value {
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.1;
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-sub {
+      font-size: 0.88rem;
+      color: #64748b;
+      margin: 0;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0.8rem 0 1rem;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.36rem 0.72rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .tag.blue { background: var(--blue-soft); color: #1d4ed8; }
+    .tag.green { background: var(--green-soft); color: #166534; }
+    .tag.amber { background: var(--amber-soft); color: #92400e; }
+    .tag.red { background: var(--red-soft); color: #991b1b; }
+
+    .section-intro {
+      color: #4b5563;
+      max-width: 820px;
+    }
+
+    .subtle {
+      color: #6b7280;
+      font-size: 0.92rem;
+    }
+
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin: 1rem 0 0.4rem;
+    }
+
+    .flow-step,
+    .flow-arrow {
+      border-radius: 12px;
+      padding: 0.78rem 0.9rem;
+      font-size: 0.92rem;
+    }
+
+    .flow-step {
+      background: #f8fafc;
+      border: 1px solid #dbeafe;
+      color: #1f2937;
+      font-weight: 700;
+    }
+
+    .flow-arrow {
+      color: #64748b;
+      padding-left: 0;
+      padding-right: 0;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.8rem 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: top;
+    }
+
+    th {
+      color: #0f172a;
+      background: #f8fafc;
+      font-size: 0.9rem;
+    }
+
+    .improve {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .small-title {
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .case-card h3,
+    .team-card h3,
+    .timeline-card h3,
+    .info-card h3,
+    .link-card h3 {
+      margin-top: 0;
+    }
+
+    .footer-note {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+      .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .card-grid, .case-grid, .team-grid, .timeline-grid, .link-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      html { scroll-padding-top: 88px; }
+      body { padding-top: 80px; }
+
+      .container {
+        margin: 18px auto 40px;
+        padding: 22px 18px 26px;
+        border-radius: 16px;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(148, 163, 184, 0.16);
+      }
+
+      nav {
+        padding: 2px 0;
+        min-height: 32px;
+      }
+
+      .nav-container {
+        padding: 0 8px;
+        min-height: 44px;
+        width: 100%;
+      }
+
+      .menu-toggle {
+        right: max(12px, env(safe-area-inset-right, 12px));
+        padding-inline-end: 12px;
+      }
+
+      nav ul {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: rgba(15, 23, 42, 0.98);
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        display: none;
+        padding: 10px 0 14px;
+        border-top: 1px solid rgba(148, 163, 184, 0.6);
+      }
+
+      nav ul li a {
+        width: 100%;
+        text-align: center;
+        padding: 6px 0;
+      }
+
+      nav ul.active { display: flex; }
+      .menu-toggle { display: flex; }
+
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.25rem; }
+      p, li { font-size: 0.95rem; }
+    }
+
+    @media (max-width: 480px) {
+      html { scroll-padding-top: 84px; }
+      body { padding-top: 76px; }
+      .container { margin: 14px auto 32px; padding: 20px 16px 24px; }
+      .metric-grid { grid-template-columns: 1fr; }
+      nav ul { gap: 4px; padding: 9px 0 12px; }
+      nav ul li a { padding: 5px 0; min-height: 38px; }
+      h1 { font-size: 1.5rem; }
+      h2 { font-size: 1.08rem; }
+      h3 { font-size: 1rem; }
+    }
+
+    @media (max-width: 390px) {
+      html { scroll-padding-top: 82px; }
+      body { padding-top: 74px; }
+      .container {
+        margin: 12px 0 28px;
+        padding: 18px 14px 22px;
+        border-radius: 14px;
+      }
+      nav { padding: 2px 0; min-height: 28px; }
+      .nav-container { padding: 0 10px 0 14px; }
+      .menu-toggle {
+        right: max(10px, env(safe-area-inset-right, 10px));
+        padding-inline-end: 10px;
+        padding: 10px;
+        min-width: 44px;
+        min-height: 44px;
+      }
+      nav ul { top: 100%; gap: 2px; padding: 8px 0 12px; }
+      nav ul li a {
+        padding: 6px 8px;
+        font-size: 0.9rem;
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      h1 { font-size: 1.35rem; line-height: 1.25; }
+      h2 { font-size: 1rem; margin-top: 1.75rem; }
+      h3 { font-size: 0.95rem; }
+      p, li { font-size: 0.9rem; }
+      ul { padding-left: 1.1rem; }
+    }
+  </style>
+</head>
+<body id="top">
+
+<nav>
+  <div class="nav-container">
+    <ul id="navLinks">
+      <li><a href="#top">Home</a></li>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#problem">Problem</a></li>
+      <li><a href="#baseline">Baseline</a></li>
+      <li><a href="#method">Method</a></li>
+      <li><a href="#evaluation">Evaluation</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#cases">Cases</a></li>
+      <li><a href="#limitations">Limitations</a></li>
+      <li><a href="#team">Team</a></li>
+      <li><a href="#links">Links</a></li>
+    </ul>
+
+    <div class="menu-toggle" aria-label="Toggle menu" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <section class="hero">
+    <span class="eyebrow">DSC 180B Capstone Project</span>
+    <h1>Think, Search, Correct: A Self-Reflection Mechanism for Adaptive Tool-Use Agents</h1>
+    <p class="team-line"><b>Team:</b> Megha Kataki, Arshia Vadhani, Joyce Lu, Jiaxin Yang, Kun Zhou</p>
+    <p class="lead">
+      We improve a search-based reasoning agent for multi-hop question answering by adding reflection and
+      verification mechanisms that make the agent less likely to answer from unsupported internal guesses,
+      better at recovering missed evidence, and more capable of issuing stronger follow-up searches.
+    </p>
+
+    <div class="tag-row">
+      <span class="tag" style="background:#f1f5f9; color:#111827; font-weight:700; border:1px solid #cbd5e1; margin-right:10px; padding: 0.4rem 1.1rem; box-shadow:0 1px 8px rgba(120,135,150,0.08); border-radius: 12px; display:inline-flex; align-items:center;">
+        <span style="font-size:1.01rem; letter-spacing:0.03em;">Features of the project:</span>
+      </span>
+      <span class="tag blue">Tool-use agents</span>
+      <span class="tag green">Multi-hop QA</span>
+      <span class="tag amber">Self-reflection</span>
+      <span class="tag red">Hallucination control</span>
+    </div>
+
+    <div class="hero-actions">
+      <a class="button primary" href="https://github.com/joycellu/tooluse-search-agent.git" target="_blank" rel="noopener noreferrer">View GitHub Repository</a>
+      <a class="button secondary" href=".\Jiaxin_code\DSC180B Quarter 2 Report.pdf" target="_blank" rel="noopener noreferrer">Project Report</a>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-label">Accuracy</div>
+        <div class="metric-value">⏫ 0.433</div>
+        <p class="metric-sub">up from 0.292</p>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">F1 Score</div>
+        <div class="metric-value">⏫ 0.458</div>
+        <p class="metric-sub">up from 0.363</p>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Searches per Query</div>
+        <div class="metric-value">⏫ 2.17</div>
+        <p class="metric-sub">baseline 1.14</p>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <section id="overview">
+    <h2>Overview</h2>
+    <p class="section-intro">
+      Large language models (LLMs) can help your life become easier, but they still struggle when a task requires complex 
+      external search, selective evidence extraction, and hallucinations from multiple retrieved sources.
+      Our project studies this through a search-based agent built on Search-o1 framework and trying to solve this practical question: 
+      how can we make an search agent more reliable and let itself decide when to search,
+      what to search to reduce false information, and whether it has enough evidence to answer?
+    </p>
+    <p>
+      We focused on improving the agent pipeline, started from a Search-o1
+      baseline, analyzes its failures, and then added new features like judge and reflection components. 
+      Those new mechanisms helped to improve the performance like accuracy and F-1 scorfe in complex multi-hop queries.
+    </p>
+
+    <div style="display: flex; align-items: flex-start; margin: 2rem 0; gap: 1.2rem;">
+      <div class="flow" style="flex:1; min-width:230px; display: flex; flex-direction: column; align-items: center;">
+        <div class="flow-step" style="margin-bottom: 0.06rem;">Question</div>
+        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.06rem;">Web Search / Retrieve</div>
+        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.06rem;">Extraction refinement Loop</div>
+        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.06rem;">Judge / Reflect</div>
+        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.06rem;">Hallucination checks</div>
+        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.06rem;">Better Follow-up Search or Final Answer</div>
+      </div>
+      <div style="flex:1; text-align: right;">
+        <img src="Jiaxin_code\hallucination.png" alt="AI hallucination" style="max-width: 95%; border-radius: 14px; box-shadow: 0 4px 36px rgba(0,0,0,0.11); border: 1px solid #e5e7eb;">
+        <div class="subtle" style="margin-top: 0.5rem;">No more misleading outputs.</div>
+      </div>
+    </div>
+  <section id="problem">
+    <h2>Problem Statement</h2>
+    <p class="section-intro">
+      Our project begins with a simple observation from the Quarter 1 case study: although Search-o1 can
+      interleave reasoning with external retrieval, the baseline system still breaks down on multi-hop
+      questions in several recurring ways. On HotpotQA, these failures often led the agent to stop too early,
+      miss evidence that had already been retrieved, or continue searching without making meaningful progress.
+    </p>
+  
+    <div class="card-grid">
+      <div class="info-card">
+        <h3>1. Skipped search calls and unsupported answers</h3>
+        <p>
+          In many failed cases, the model did not take a needed search and instead answered directly from
+          its internal knowledge base (usually not enough or dated). This often produced misleading outputs.
+        </p>
+      </div>
+  
+      <div class="info-card">
+        <h3>2. Information loss during extraction</h3>
+        <p>
+          Even when relevant documents or webpages were retrieved, the Reason-in-Documents step did not always preserve
+          the useful evidence. As a result, the agent could conclude that no helpful information had been found
+          even though the answer was already present in the fetched pages.
+        </p>
+      </div>
+  
+      <div class="info-card">
+        <h3>3. Weak multi-hop search planning</h3>
+        <p>
+          The baseline also struggled to turn partial evidence into a better next query. When an early search
+          step was incomplete or slightly off topic, the model often failed to correct course, which limited
+          its ability to perform effective multi-hop retrieval when solving complex questions.
+        </p>
+      </div>
+  
+      <div class="info-card">
+        <h3>What do we do?</h3>
+        <p>
+          These patterns suggest that external search alone is not enough. A tool-use agent also needs mechanisms for
+          checking whether an answer is grounded, noticing when useful evidence has been missed, and reflecting
+          on whether the current search path should be revised. These are the goals our project is trying to solve.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="baseline">
+    <h2>Baseline Framework: Search-o1</h2>
+    <p>
+      Search-o1 is a search-augmented reasoning framework that loops between an LRM, a web search tool, and a
+      document reasoning module. Compared with direct generation, it gives the model a way to gather external evidence;
+      compared with standard RAG, it supports iterative search instead of a single retrieve-then-answer pass.
+    </p>
+    <p>
+      In our implementation, the baseline model uses a Jina search API (instaed of Bing Search API with Serper.dev in the original model) to retrieve web results, fetches web page content through
+      Jina parsing, and uses Qwen2.5-3B-Instruct as the reasoning backbone. 
+    </p>
+
+    <div class="timeline-grid">
+      <div class="timeline-card">
+        <div class="small-title">What the baseline already does well</div>
+        <ul>
+          <li>Supports iterative external search</li>
+          <li>Lets the model reason over retrieved documents instead of snippets alone</li>
+          <li>Performs better than pure direct generation on knowledge-intensive tasks</li>
+        </ul>
+      </div>
+      <div class="timeline-card">
+        <div class="small-title">What it still struggles with</div>
+        <ul>
+          <li>Premature answer generation</li>
+          <li>Missed evidence after retrieval</li>
+          <li>Weak planning capacity in multi-hop search</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2>Method</h2>
+    <p class="section-intro">
+      We did not arrive at the final system in one step. Our method has two stages: a broader Phase 1 design with
+      multiple gates, and a Phase 2 refinement that removes the components that turned out to be counterproductive.
+    </p>
+
+    <h3>Phase 1: Initial Architecture Design</h3>
+    <div class="card-grid">
+      <div class="info-card">
+        <h3>Hallucination Detection</h3>
+        <p>
+          When the model tries to finalize without prior evidence, this module checks for unsupported factual claims and
+          forces a verification search cycle before the answer can be accepted.
+        </p>
+      </div>
+      <div class="info-card">
+        <h3>Retrieval Judge and Query Refinement (Gate 1)</h3>
+        <p>
+          A snippet-level judge evaluates whether the initial retrieved results seem promising. If not, the system asks
+          the model to refine the search query before fetching full pages.
+        </p>
+      </div>
+      <div class="info-card">
+        <h3>Extraction Refinement Loop</h3>
+        <p>
+          If the document reasoning module returns “No information found,” a presence checker scans the raw document
+          text for relevant cues and can force another pass over the same evidence.
+        </p>
+      </div>
+      <div class="info-card">
+        <h3>Content Judge and Reflection (Gate 2)</h3>
+        <p>
+          After extraction, the system checks whether the retrieved content actually helps the current search step. If
+          not, it appends corrective feedback to guide the next search decision.
+        </p>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <h3>Phase 1 takeaway</h3>
+      <p>
+        Phase 1 was useful diagnostically because it let us observe which kinds of validation improved the pipeline and
+        which ones created friction. This was important for moving toward a cleaner final architecture.
+      </p>
+    </div>
+
+    <h3>Phase 2: Final Architecture Refinement</h3>
+    <div class="card-grid">
+      <div class="info-card">
+        <h3>Removed Gate 1</h3>
+        <p>
+          The snippet judge often made bad decisions because short search snippets lacked enough context. We removed it
+          to prioritize recall and let the model inspect full high-ranked pages directly.
+        </p>
+      </div>
+      <div class="info-card">
+        <h3>Removed Gate 3 routing</h3>
+        <p>
+          The routing judge frequently produced redundant search loops and sometimes conflicted with the model’s own
+          reasoning state, so we removed it to restore model autonomy.
+        </p>
+      </div>
+      <div class="info-card">
+        <h3>Refined Gate 2 feedback</h3>
+        <p>
+          Instead of requiring the extracted evidence to fully solve the current sub-question, the final system asks a
+          more practical question: does the content provide any useful signal or partial clue for the next step?
+        </p>
+      </div>
+      <div class="info-card">
+        <h3>Neutral reflection prompts</h3>
+        <p>
+          We replaced punitive warning-style feedback with neutral observations and more specific strategic follow-up
+          suggestions so the model receives guidance without disrupting its reasoning flow.
+        </p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="small-title">Final optimized pipeline</div>
+      <p><b>Hallucination Check</b> + <b>Extraction Refinement Loop</b> + <b>Content Judge and Reflection</b></p>
+      <p class="subtle">
+        The final system is intentionally simpler than Phase 1. It keeps the components that consistently improve the
+        agent and removes the ones that added noise or unnecessary control.
+      </p>
+    </div>
+  </section>
+
+  <section id="evaluation">
+    <h2>Evaluation Setup</h2>
+    <p>
+      We evaluate the baseline and improved agent on a 120-question subset of the HotpotQA test set. The full test split
+      is much larger, but our experiments process full web pages iteratively, which is token-intensive under our search
+      and parsing budget.
+    </p>
+
+    <div class="card-grid">
+      <div class="info-card">
+        <h3>Dataset</h3>
+        <ul>
+          <li>HotpotQA test data</li>
+          <li>120-sample subset for final evaluation</li>
+          <li>Chosen to preserve a meaningful benchmark under API and token limits</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h3>Model and settings</h3>
+        <ul>
+          <li>Backbone model: Qwen2.5-3B-Instruct</li>
+          <li>max_search_limit = 10</li>
+          <li>max_turn = 15, top_k = 10, max_doc_len = 3000</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h3>Metrics</h3>
+        <ul>
+          <li>Accuracy: whether the ground-truth answer appears in the prediction</li>
+          <li>F1: token overlap between prediction and ground truth</li>
+          <li>Average searches per query as a behavioral signal</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h3>What we log</h3>
+        <ul>
+          <li>Quantitative metrics per batch</li>
+          <li>Extraction histories and prompts</li>
+          <li>Search traces for qualitative error analysis</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="results">
+    <h2>Results</h2>
+    <p class="section-intro">
+      The final architecture improves both answer quality and search behavior. The gains are not just numerical; they
+      reflect a more evidence-driven agent that searches more strategically and recovers information it previously left
+      unused.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Baseline Search-o1</th>
+            <th>Improved Agent</th>
+            <th>Change</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Accuracy</td>
+            <td>0.292</td>
+            <td>0.433</td>
+            <td class="improve">+0.141</td>
+          </tr>
+          <tr>
+            <td>F1 Score</td>
+            <td>0.363</td>
+            <td>0.458</td>
+            <td class="improve">+0.095</td>
+          </tr>
+          <tr>
+            <td>Average searches per query</td>
+            <td>1.14</td>
+            <td>2.17</td>
+            <td class="improve">+1.03</td>
+          </tr>
+          <tr>
+            <td>Hallucination corrections observed</td>
+            <td>—</td>
+            <td>12</td>
+            <td class="improve">new safety behavior</td>
+          </tr>
+          <tr>
+            <td>Extraction recoveries observed</td>
+            <td>—</td>
+            <td>4</td>
+            <td class="improve">new recovery behavior</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-grid">
+      <div class="info-card">
+        <h3>What the higher search count means</h3>
+        <p>
+          The improved agent does not merely search more because it is inefficient. It searches more because it is less
+          willing to stop at weak evidence and more willing to use partial clues to continue multi-hop reasoning.
+        </p>
+      </div>
+      <div class="info-card">
+        <h3>Why the gains matter</h3>
+        <p>
+          The jump in accuracy and F1 suggests that the reflection and verification additions help translate extra tool
+          access into more reliable question answering instead of extra noise.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="cases">
+    <h2>Case Studies</h2>
+    <p class="section-intro">
+      The strongest evidence for our approach is not only the aggregate score improvement, but also the kinds of
+      corrections the final system can make during execution.
+    </p>
+
+    <div class="case-grid">
+      <div class="case-card">
+        <h3>Case 1: Hallucination check prevents unsupported answers</h3>
+        <p>
+          In the baseline setting, the model sometimes attempted to answer directly from internal memory. The
+          hallucination check interrupts that behavior and forces a search cycle before the answer can be finalized.
+        </p>
+        <p class="subtle"><b>Takeaway:</b> the agent becomes more evidence-dependent instead of overconfident.</p>
+      </div>
+      <div class="case-card">
+        <h3>Case 2: Reflection improves follow-up search</h3>
+        <p>
+          When the current evidence is incomplete, the reflection module now proposes a specific next-step query rather
+          than generic advice. This helps the model move from a vague clue to a more productive second-hop search.
+        </p>
+        <p class="subtle"><b>Takeaway:</b> better search planning is a major source of the final gain.</p>
+      </div>
+      <div class="case-card">
+        <h3>Case 3: Extraction refinement recovers missed information</h3>
+        <p>
+          In several examples, useful evidence was already present in the fetched pages, but the reasoning module did not
+          extract it on the first pass. The refinement loop detects that mismatch and triggers another analysis step.
+        </p>
+        <p class="subtle"><b>Takeaway:</b> reliability improves not only through retrieval, but also through better use of retrieved content.</p>
+      </div>
+      <div class="case-card">
+        <h3>What these cases show overall</h3>
+        <p>
+          The final system is better because it changes agent behavior: it verifies more often, stops trusting weak
+          evidence, and turns partial results into more purposeful follow-up actions.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="limitations">
+    <h2>Limitations and Future Work</h2>
+    <div class="card-grid">
+      <div class="info-card">
+        <h3>Current limitations</h3>
+        <ul>
+          <li>Evaluation is on a 120-sample subset rather than the full benchmark</li>
+          <li>Iterative web-page reasoning is slow and token-intensive</li>
+          <li>Prompt-based judges still have room to become more robust and more diagnostic</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h3>Future directions</h3>
+        <ul>
+          <li>Run larger-scale evaluations under a bigger token budget</li>
+          <li>Use richer diagnostic labels to drive more targeted reflection</li>
+          <li>Extend the framework from retrieval-only tasks to heterogeneous tool chains</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="small-title">So what?</div>
+      <p>
+        Our results suggest that simple reflection and evaluation mechanisms can make search-based reasoning agents more
+        reliable without retraining the backbone model. That makes this line of work practical for future assistants
+        that must combine reasoning with external tools under uncertainty.
+      </p>
+    </div>
+  </section>
+
+  <section id="team">
+    <h2>Team Contributions</h2>
+    <div class="team-grid">
+      <div class="team-card">
+        <h3>Arshia Vadhani</h3>
+        <ul>
+          <li>Worked on Phase 1 pipeline components including a basic judge and reflection prompting for Gate 3</li>
+          <li>Collaborated on updating Gate 3 behavior to improve overall accuracy</li>
+          <li>Contributed to the report discussion of judge, reflect, and refine integrations</li>
+        </ul>
+      </div>
+      <div class="team-card">
+        <h3>Megha Kataki</h3>
+        <ul>
+          <li>Implemented the initial judge function for Gate 1</li>
+          <li>Explored where retrieval judgment should be placed in the pipeline</li>
+          <li>Helped document the introduction and overall project framing</li>
+        </ul>
+      </div>
+      <div class="team-card">
+        <h3>Joyce Lu</h3>
+        <ul>
+          <li>Implemented key Phase 1 components, including retrieval-side and extraction-side control logic</li>
+          <li>Led refinement of the final architecture after qualitative log analysis</li>
+          <li>Contributed to the technical report and integration across modules</li>
+        </ul>
+      </div>
+      <div class="team-card">
+        <h3>Jiaxin Yang</h3>
+        <ul>
+          <li>Worked on reflection design, content framing, and website/report communication</li>
+          <li>Helped refine project narrative around failure modes, iteration, and final improvements</li>
+          <li>Contributed written sections including summary-oriented project communication</li>
+        </ul>
+      </div>
+    </div>
+    <p class="subtle" style="margin-top: 0.9rem;">Kun Zhou is listed as a team member above; add contribution details here once you confirm the final wording you want to use on the site.</p>
+  </section>
+
+  <section id="links">
+    <h2>Resources</h2>
+    <div class="link-grid">
+      <div class="link-card">
+        <h3>Code</h3>
+        <p><a href="https://github.com/joycellu/tooluse-search-agent.git" target="_blank" rel="noopener noreferrer">GitHub Repository</a></p>
+        <p class="subtle">Implementation of the baseline, reflection modules, search pipeline, and evaluation scripts.</p>
+      </div>
+      <div class="link-card">
+        <h3>Report</h3>
+        <p><a href="DSC180B Quarter 2 Report.pdf" target="_blank" rel="noopener noreferrer">Quarter 2 Report (PDF)</a></p>
+        <p class="subtle">Project framing, architecture evolution, evaluation setup, quantitative results, and qualitative case analysis.</p>
+      </div>
+      <div class="link-card">
+        <h3>Reproducibility Notes</h3>
+        <p>Backbone model: Qwen2.5-3B-Instruct</p>
+        <p>External tools: Search API + Jina page parsing</p>
+      </div>
+      <div class="link-card">
+        <h3>Final Deliverables</h3>
+        <p>Add your final poster, final report, and demo link here when they are ready.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer-note">
+    Built for DSC 180B. This website summarizes the project story, architecture changes, and current evaluation results in a form that is readable for both technical reviewers and external audiences.
+  </div>
+</div>
+
+<script>
+  function toggleMenu() {
+    document.getElementById("navLinks").classList.toggle("active");
+  }
+
+  document.querySelectorAll('#navLinks a').forEach(a => {
+    a.addEventListener('click', () => {
+      const nav = document.getElementById("navLinks");
+      if (nav.classList.contains('active')) nav.classList.remove('active');
+    });
+  });
+</script>
+
+</body>
+</html>
