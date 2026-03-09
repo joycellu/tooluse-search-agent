@@ -557,10 +557,9 @@
       <li><a href="#method">Method</a></li>
       <li><a href="#evaluation">Evaluation</a></li>
       <li><a href="#results">Results</a></li>
-      <li><a href="#cases">Cases</a></li>
       <li><a href="#limitations">Limitations</a></li>
       <li><a href="#team">Team</a></li>
-      <li><a href="#links">Links</a></li>
+      <li><a href="#links">Resources</a></li>
     </ul>
 
     <div class="menu-toggle" aria-label="Toggle menu" onclick="toggleMenu()">
@@ -573,11 +572,14 @@
   <section class="hero">
     <span class="eyebrow">DSC 180B Capstone Project</span>
     <h1>Think, Search, Correct: A Self-Reflection Mechanism for Adaptive Tool-Use Agents</h1>
-    <p class="team-line"><b>Team:</b> Megha Kataki, Arshia Vadhani, Joyce Lu, Jiaxin Yang, Kun Zhou</p>
+    <p class="team-line"><b>Team:</b> Megha Kataki (mkataki@ucsd.edu), Arshia Vadhani (avadhani@ucsd.edu), 
+      Joyce Lu (jol072@ucsd.edu), Jiaxin Yang (jiy016@ucsd.edu)</p>
+    <p class="Mentor"> <b>Mentor:</b> Kun Zhou (kuzhou@ucsd.edu)</p>
     <p class="lead">
-      We improve a search-based reasoning agent for multi-hop question answering by adding reflection and
+      We improved a search-based reasoning agent for multi-hop question answering by adding reflection and
       verification mechanisms that make the agent less likely to answer from unsupported internal guesses,
       better at recovering missed evidence, and more capable of issuing stronger follow-up searches.
+      LLM users who rely on factual checks or complex multi-hop problems would be the stakeholders from our project. 
     </p>
 
     <div class="tag-row">
@@ -592,23 +594,23 @@
 
     <div class="hero-actions">
       <a class="button primary" href="https://github.com/joycellu/tooluse-search-agent.git" target="_blank" rel="noopener noreferrer">View GitHub Repository</a>
-      <a class="button secondary" href=".\Jiaxin_code\DSC180B Quarter 2 Report.pdf" target="_blank" rel="noopener noreferrer">Project Report</a>
+      <a class="button secondary" href=".\Jiaxin_code\report.pdf" target="_blank" rel="noopener noreferrer">Project Report</a>
     </div>
 
     <div class="metric-grid">
       <div class="metric-card">
         <div class="metric-label">Accuracy</div>
-        <div class="metric-value">⏫ 0.433</div>
+        <div class="metric-value">📈 0.433</div>
         <p class="metric-sub">up from 0.292</p>
       </div>
       <div class="metric-card">
         <div class="metric-label">F1 Score</div>
-        <div class="metric-value">⏫ 0.458</div>
+        <div class="metric-value">📈 0.458</div>
         <p class="metric-sub">up from 0.363</p>
       </div>
       <div class="metric-card">
         <div class="metric-label">Searches per Query</div>
-        <div class="metric-value">⏫ 2.17</div>
+        <div class="metric-value">📈 2.17</div>
         <p class="metric-sub">baseline 1.14</p>
       </div>
     </div>
@@ -622,34 +624,55 @@
       Large language models (LLMs) can help your life become easier, but they still struggle when a task requires complex 
       external search, selective evidence extraction, and hallucinations from multiple retrieved sources.
       Our project studies this through a search-based agent built on Search-o1 framework and trying to solve this practical question: 
-      how can we make an search agent more reliable and let itself decide when to search,
-      what to search to reduce false information, and whether it has enough evidence to answer?
+      how can we make an search agent more reliable and let itself decide <b>when to search,
+      what to search to reduce false information, and whether it has enough evidence to answer?</b>
     </p>
     <p>
       We focused on improving the agent pipeline, started from a Search-o1
       baseline, analyzes its failures, and then added new features like judge and reflection components. 
-      Those new mechanisms helped to improve the performance like accuracy and F-1 scorfe in complex multi-hop queries.
+      Those new mechanisms helped to <b>improve the performance like accuracy and F-1 score in complex multi-hop queries.</b>
     </p>
 
-    <div style="display: flex; align-items: flex-start; margin: 2rem 0; gap: 1.2rem;">
-      <div class="flow" style="flex:1; min-width:230px; display: flex; flex-direction: column; align-items: center;">
-        <div class="flow-step" style="margin-bottom: 0.06rem;">Question</div>
-        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
-        <div class="flow-step" style="margin-bottom: 0.06rem;">Web Search / Retrieve</div>
-        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
-        <div class="flow-step" style="margin-bottom: 0.06rem;">Extraction refinement Loop</div>
-        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
-        <div class="flow-step" style="margin-bottom: 0.06rem;">Judge / Reflect</div>
-        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
-        <div class="flow-step" style="margin-bottom: 0.06rem;">Hallucination checks</div>
-        <div class="flow-arrow" style="font-size:1.15rem; color:#4b5563; margin: 0.08rem 0; display: flex; justify-content: center;">&#8595;</div>
-        <div class="flow-step" style="margin-bottom: 0.06rem;">Better Follow-up Search or Final Answer</div>
+    <div class="overview-flow-img-container" style="display: flex; align-items: flex-start; margin: 2rem 0; gap: 1.2rem; flex-wrap: wrap;">
+      <div class="flow" style="flex: 1 1 0; min-width: 180px; max-width:340px; width:100%; display: flex; flex-direction: column; align-items: center; padding: 0.8rem 0.4rem;">
+        <div class="flow-step" style="margin-bottom: 0.03rem; padding: 0.17rem 0.6rem; font-size:0.98rem;">Question</div>
+        <div class="flow-arrow" style="font-size:1rem; color:#4b5563; margin: 0.01rem 0; display: flex; justify-content: center; line-height: 1;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.03rem; padding: 0.17rem 0.6rem; font-size:0.98rem;">Web Search / Retrieve</div>
+        <div class="flow-arrow" style="font-size:1rem; color:#4b5563; margin: 0.01rem 0; display: flex; justify-content: center; line-height: 1;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.03rem; padding: 0.17rem 0.6rem; font-size:0.98rem;">Extraction<br>Refinement Loop</div>
+        <div class="flow-arrow" style="font-size:1rem; color:#4b5563; margin: 0.01rem 0; display: flex; justify-content: center; line-height: 1;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.03rem; padding: 0.17rem 0.6rem; font-size:0.98rem;">Judge / Reflect</div>
+        <div class="flow-arrow" style="font-size:1rem; color:#4b5563; margin: 0.01rem 0; display: flex; justify-content: center; line-height: 1;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.03rem; padding: 0.17rem 0.6rem; font-size:0.98rem;">Hallucination<br>Checks</div>
+        <div class="flow-arrow" style="font-size:1rem; color:#4b5563; margin: 0.01rem 0; display: flex; justify-content: center; line-height: 1;">&#8595;</div>
+        <div class="flow-step" style="margin-bottom: 0.03rem; padding: 0.17rem 0.6rem; font-size:0.98rem;">Better Follow-up<br>Search or Final Answer</div>
       </div>
       <div style="flex:1; text-align: right;">
         <img src="Jiaxin_code\hallucination.png" alt="AI hallucination" style="max-width: 95%; border-radius: 14px; box-shadow: 0 4px 36px rgba(0,0,0,0.11); border: 1px solid #e5e7eb;">
         <div class="subtle" style="margin-top: 0.5rem;">No more misleading outputs.</div>
       </div>
     </div>
+    <style>
+      @media (max-width: 700px) {
+        .overview-flow-img-container {
+          flex-direction: column !important;
+          gap: 0.7rem !important;
+        }
+        .overview-flow-img-container > .flow {
+          max-width: 100% !important;
+          width: 100% !important;
+          min-width: 0 !important;
+        }
+        .overview-flow-img-container > div:last-child {
+          text-align: center !important;
+          display: block !important;
+        }
+        .overview-flow-img-container img {
+          max-width: 94vw !important;
+          height: auto !important;
+        }
+      }
+    </style>
   <section id="problem">
     <h2>Problem Statement</h2>
     <p class="section-intro">
@@ -695,12 +718,15 @@
         </p>
       </div>
     </div>
+    <div style="display: flex; justify-content: center; margin: 2rem 0;">
+      <img src="Jiaxin_code/pipeline.jfif" alt="Pipeline Diagram" style="max-width: 95%; border-radius: 14px; box-shadow: 0 4px 36px rgba(0,0,0,0.11); border: 1px solid #e5e7eb;">
+    </div>
   </section>
 
   <section id="baseline">
     <h2>Baseline Framework: Search-o1</h2>
     <p>
-      Search-o1 is a search-augmented reasoning framework that loops between an LRM, a web search tool, and a
+      Search-o1 is a search-augmented reasoning framework that loops between an LRM (Large-Reasoning Model), a web search tool, and a
       document reasoning module. Compared with direct generation, it gives the model a way to gather external evidence;
       compared with standard RAG, it supports iterative search instead of a single retrieve-then-answer pass.
     </p>
@@ -732,88 +758,109 @@
   <section id="method">
     <h2>Method</h2>
     <p class="section-intro">
-      We did not arrive at the final system in one step. Our method has two stages: a broader Phase 1 design with
-      multiple gates, and a Phase 2 refinement that removes the components that turned out to be counterproductive.
+      Our system builds on the Search-o1 framework and focuses on improving reliability during the
+      search–reason–answer loop. We introduced several verification, judge, and reflection components 
+      that target the failure modes identified in the baseline.
+      Our development process proceeded in two stages: first is the architecture with multiple control
+      gates (Phase 1), and then followed by a simplified final pipeline after empirical testing (Phase 2).
     </p>
-
-    <h3>Phase 1: Initial Architecture Design</h3>
+  
+    <h3>Phase 1: Initial Architecture</h3>
     <div class="card-grid">
       <div class="info-card">
         <h3>Hallucination Detection</h3>
         <p>
-          When the model tries to finalize without prior evidence, this module checks for unsupported factual claims and
-          forces a verification search cycle before the answer can be accepted.
+          Before a final answer is accepted, the system checks whether the reasoning trace contains
+          evidence retrieved from external sources. If unsupported claims are detected, the agent is
+          forced to perform an additional search step before answering.
         </p>
       </div>
+      
+  
       <div class="info-card">
         <h3>Retrieval Judge and Query Refinement (Gate 1)</h3>
         <p>
-          A snippet-level judge evaluates whether the initial retrieved results seem promising. If not, the system asks
-          the model to refine the search query before fetching full pages.
+          A lightweight judge function evaluates the relevance of initial search snippets. If the results is
+          weak or unrelated, the system prompts the model to reformulate the query before retrieving
+          full documents.
         </p>
       </div>
+  
       <div class="info-card">
         <h3>Extraction Refinement Loop</h3>
         <p>
-          If the document reasoning module returns “No information found,” a presence checker scans the raw document
-          text for relevant cues and can force another pass over the same evidence.
+          When the document reasoning step reports that no useful information was found, a secondary step
+          checks the retrieved page content directly. If relevant cues are detected, the reasoning
+          module is asked to reprocess the same evidence.
         </p>
       </div>
+  
       <div class="info-card">
         <h3>Content Judge and Reflection (Gate 2)</h3>
         <p>
-          After extraction, the system checks whether the retrieved content actually helps the current search step. If
-          not, it appends corrective feedback to guide the next search decision.
+          After extraction, a judge function evaluates whether the retrieved evidence strong enough to answer
+          the question. When it does not, the system produces feedback that guides the next search action
+          instead of continuing the same reasoning path.
         </p>
       </div>
     </div>
 
     <div class="note-box">
-      <h3>Phase 1 takeaway</h3>
+      <h3>Observation from Phase 1</h3>
       <p>
-        Phase 1 was useful diagnostically because it let us observe which kinds of validation improved the pipeline and
-        which ones created friction. This was important for moving toward a cleaner final architecture.
+        While Phase 1 improved control over the reasoning process, we found that several gates introduced unnecessary
+        complexity, and it sometimes interfered with the model's own search strategy. Execution logs
+        revealed that some modules contributed little to performance while increasing latency and
+        search loops.
       </p>
     </div>
-
-    <h3>Phase 2: Final Architecture Refinement</h3>
+    
+  
+    <h3>Phase 2: Refinement</h3>
     <div class="card-grid">
       <div class="info-card">
-        <h3>Removed Gate 1</h3>
+        <h3>Removing the snippet judge</h3>
         <p>
-          The snippet judge often made bad decisions because short search snippets lacked enough context. We removed it
-          to prioritize recall and let the model inspect full high-ranked pages directly.
+          We removed Gate 1 evaluation because short search summaries often lacked sufficient context. 
+          We want the model prioritizing recall and fetching full documents of top-ranked search results instead of judging based on incomplete snippets.
         </p>
       </div>
+  
       <div class="info-card">
-        <h3>Removed Gate 3 routing</h3>
+        <h3>Removing routing control</h3>
         <p>
-          The routing judge frequently produced redundant search loops and sometimes conflicted with the model’s own
-          reasoning state, so we removed it to restore model autonomy.
+          We also removed routing judge which caused redundant search loops.
+          Gate 2 reflection mechanism will replace this and provides stategic guidance for the next step search.
         </p>
       </div>
+  
       <div class="info-card">
-        <h3>Refined Gate 2 feedback</h3>
+        <h3>Refinement reflection feedback</h3>
         <p>
-          Instead of requiring the extracted evidence to fully solve the current sub-question, the final system asks a
-          more practical question: does the content provide any useful signal or partial clue for the next step?
+          The reflection module can analyze the gap between the user's question and current findings. 
+          This helps the model to formulates a specific strategic follow-up query to guide the agent's next step.
         </p>
       </div>
+  
       <div class="info-card">
-        <h3>Neutral reflection prompts</h3>
+        <h3>Retaining effective components</h3>
         <p>
-          We replaced punitive warning-style feedback with neutral observations and more specific strategic follow-up
-          suggestions so the model receives guidance without disrupting its reasoning flow.
+          Hallucination detection, the extraction refinement loop, and the content judge were retained
+          because they consistently improved the agent's ability to verify evidence and recover missed
+          information.
         </p>
       </div>
     </div>
-
+  
     <div class="callout">
-      <div class="small-title">Final optimized pipeline</div>
-      <p><b>Hallucination Check</b> + <b>Extraction Refinement Loop</b> + <b>Content Judge and Reflection</b></p>
+      <div class="small-title">Final Pipeline</div>
+      <p>
+        <b>Hallucination Detection → Retrieval → Extraction Refinement Loop → Content Judge & Reflection</b>
+      </p>
       <p class="subtle">
-        The final system is intentionally simpler than Phase 1. It keeps the components that consistently improve the
-        agent and removes the ones that added noise or unnecessary control.
+        The final model is simpler than what we design in the beginning but being more stable and effective. By focusing on
+        evidence verification and search refinement, the agent becomes better at dealing multi-hop
+        reasoning rather than prematurely producing unsupported answers.
       </p>
     </div>
   </section>
@@ -821,16 +868,17 @@
   <section id="evaluation">
     <h2>Evaluation Setup</h2>
     <p>
-      We evaluate the baseline and improved agent on a 120-question subset of the HotpotQA test set. The full test split
-      is much larger, but our experiments process full web pages iteratively, which is token-intensive under our search
-      and parsing budget.
+      We evaluate the baseline and improved agent on a 120-question subset of the <b><a href="https://arxiv.org/abs/1809.09600" target="_blank" style="text-decoration:underline;">Hotpot-QA</a></b> test set.
+      This is a benchmark designed to evaluate multi-hop reasoning and document synthesis. 
+      The full test split contains more than 7000 questions, but our experiments process full web pages iteratively, which is token-intensive under our search
+      and parsing budget. We only use 120 subset from it.
     </p>
 
     <div class="card-grid">
       <div class="info-card">
         <h3>Dataset</h3>
         <ul>
-          <li>HotpotQA test data</li>
+          <li><a href="https://arxiv.org/abs/1809.09600" target="_blank" style="text-decoration:underline;">Hotpot-QA</a> test data</li>
           <li>120-sample subset for final evaluation</li>
           <li>Chosen to preserve a meaningful benchmark under API and token limits</li>
         </ul>
@@ -852,7 +900,7 @@
         </ul>
       </div>
       <div class="info-card">
-        <h3>What we log</h3>
+        <h3>What we care</h3>
         <ul>
           <li>Quantitative metrics per batch</li>
           <li>Extraction histories and prompts</li>
@@ -860,10 +908,62 @@
         </ul>
       </div>
     </div>
+    
+
+      <h3>📝 Demo to Run the Project</h3>
+      <p>For more information, check our <a href="https://github.com/joycellu/tooluse-search-agent.git" target="_blank" rel="noopener noreferrer" style="text-decoration:underline;">GitHub repository</a>.</p>
+    
+      <details style="background:#fafafa; padding:15px; border-radius:10px; border:1px solid #e5e7eb;">
+        <summary style="cursor:pointer; font-weight:bold;">
+          Click to expand setup and run instructions
+        </summary>
+    
+        <div style="margin-top:15px; line-height:1.6; font-size:0.95rem;">
+          <h3>1. SSH into the Cluster</h3>
+          <p>Connect to your remote cluster where the model will run:</p>
+          <pre style="background:#f3f4f6; padding:12px; border-radius:8px; overflow-x:auto;"><code>ssh username@your-cluster-address
+    cd /path/to/repository</code></pre>
+    
+          <h3>2. Launch the environment with A30 GPU</h3>
+          <pre style="background:#f3f4f6; padding:12px; border-radius:8px; overflow-x:auto;"><code>launch-scipy-ml.sh -W DSC180A_FA25_A00 -c 8 -m 32 -g 1 -v a30</code></pre>
+    
+          <h3>3. Install Dependencies</h3>
+          <pre style="background:#f3f4f6; padding:12px; border-radius:8px; overflow-x:auto;"><code>pip install -r requirements.txt</code></pre>
+    
+          <h3>4. Set up your API keys</h3>
+          <pre style="background:#f3f4f6; padding:12px; border-radius:8px; overflow-x:auto;"><code>export JINA_API_KEY="your_jina_key"
+    export SERPER_API_KEY="your_serper_key"</code></pre>
+    
+          <h3>5. Run the Search-o1 script</h3>
+          <pre style="background:#f3f4f6; padding:12px; border-radius:8px; overflow-x:auto;"><code>python scripts/run_search_o1.py \
+      --dataset_name hotpotqa \
+      --split test \
+      --subset_num 10 \
+      --max_search_limit 5 \
+      --max_turn 10 \
+      --top_k 10 \
+      --max_doc_len 3000 \
+      --use_jina True \
+      --model_path "Qwen/Qwen2.5-3B-Instruct" \
+      --jina_api_key $JINA_API_KEY \
+      --bing_subscription_key $SERPER_API_KEY \
+      --bing_endpoint "https://google.serper.dev/search"</code></pre>
+    
+          <h3>6. Check Outputs Saved to <code>outputs/</code></h3>
+          <p>After the script finishes, check the generated results in the <code>outputs/</code> directory.</p>
+        </div>
+      </details>
+
+
+
+
   </section>
 
   <section id="results">
     <h2>Results</h2>
+
+
+    <h3>Quantitative Performance</h3>
     <p class="section-intro">
       The final architecture improves both answer quality and search behavior. The gains are not just numerical; they
       reflect a more evidence-driven agent that searches more strategically and recovers information it previously left
@@ -914,6 +1014,19 @@
         </tbody>
       </table>
     </div>
+    
+    <div class="note-box">
+      <details>
+        <summary style="cursor: pointer; font-weight: bold;">
+          📊 Click to see Full results on 120 samples
+        </summary>
+        <div style="margin-top: 1em;">
+          <img src="Jiaxin_code/result.jpeg" 
+              alt="results"
+              style="width: 98%; margin-bottom: 1em; border-radius: 6px; box-shadow: 0 2px 8px #0001;" />
+        </div>
+      </details>
+    </div>
 
     <div class="card-grid">
       <div class="info-card">
@@ -931,10 +1044,10 @@
         </p>
       </div>
     </div>
-  </section>
 
-  <section id="cases">
-    <h2>Case Studies</h2>
+
+    <h3>Qualitative Performance</h3>
+
     <p class="section-intro">
       The strongest evidence for our approach is not only the aggregate score improvement, but also the kinds of
       corrections the final system can make during execution.
@@ -973,35 +1086,111 @@
         </p>
       </div>
     </div>
+
+    <!-- Images -->
+    <div class="note-box">
+      <details>
+        <summary style="cursor: pointer; font-weight: bold;">
+          🌀 Click to see performance of Halluciation Detection
+        </summary>
+        <div style="margin-top: 1em;">
+          <img src="Jiaxin_code/hallucination_check1.png" 
+              alt="Hallucination Detection Step 1"
+              style="width: 98%; margin-bottom: 1em; border-radius: 6px; box-shadow: 0 2px 8px #0001;" />
+          <img src="Jiaxin_code/hallucination_check2.png" 
+              alt="Hallucination Detection Step 2"
+              style="width: 98%; border-radius: 6px; box-shadow: 0 2px 8px #0001;" />
+        </div>
+      </details>
+    </div>
+
+    <div class="note-box">
+      <details>
+        <summary style="cursor: pointer; font-weight: bold;">
+          💭 Click to see Judge and Reflection
+        </summary>
+        <div style="margin-top: 1em;">
+          <img src="Jiaxin_code/judge_reflection1.jpeg" 
+              alt="judge_reflection1"
+              style="width: 98%; margin-bottom: 1em; border-radius: 6px; box-shadow: 0 2px 8px #0001;" />
+          <img src="Jiaxin_code/judge_reflection2.jpeg" 
+              alt="judge_reflection2"
+              style="width: 98%; border-radius: 6px; box-shadow: 0 2px 8px #0001;" />
+        </div>
+      </details>
+    </div>
+
+    <div class="note-box">
+      <details>
+        <summary style="cursor: pointer; font-weight: bold;">
+          🌐 Click to see Extraction Refinement
+        </summary>
+        <div style="margin-top: 1em;">
+          <img src="Jiaxin_code/extraction_refinement1.jpeg" 
+              alt="extraction_refinement1"
+              style="width: 98%; margin-bottom: 1em; border-radius: 6px; box-shadow: 0 2px 8px #0001;" />
+          <img src="Jiaxin_code/extraction_refinement2.jpeg" 
+              alt="extraction_refinement2"
+              style="width: 98%; border-radius: 6px; box-shadow: 0 2px 8px #0001;" />
+              <img src="Jiaxin_code/extraction_refinement3.jpeg" 
+              alt="extraction_refinement3"
+              style="width: 98%; border-radius: 6px; box-shadow: 0 2px 8px #0001;" />
+              <img src="Jiaxin_code/extraction_refinement4.jpeg" 
+              alt="extraction_refinement4"
+              style="width: 98%; border-radius: 6px; box-shadow: 0 2px 8px #0001;" />
+        </div>
+      </details>
+    </div>
   </section>
 
   <section id="limitations">
     <h2>Limitations and Future Work</h2>
+  
     <div class="card-grid">
       <div class="info-card">
         <h3>Current limitations</h3>
         <ul>
-          <li>Evaluation is on a 120-sample subset rather than the full benchmark</li>
-          <li>Iterative web-page reasoning is slow and token-intensive</li>
-          <li>Prompt-based judges still have room to become more robust and more diagnostic</li>
+          <li>
+            Our evaluation was conducted on a 120-question subset of HotpotQA rather than the full benchmark.
+            This was mainly due to token limits and the cost of running iterative retrieval and reasoning steps.
+          </li>
+          <li>
+            The pipeline introduces additional reasoning passes over retrieved documents. While this helps
+            recover missed evidence, it also increases latency and token usage compared with the baseline.
+          </li>
+          <li>
+            The judge and reflection components rely on prompt-based evaluation. In some cases the feedback
+            is still coarse and vague, which limits how precisely the agent can diagnose its own reasoning failures.
+          </li>
         </ul>
       </div>
+  
       <div class="info-card">
-        <h3>Future directions</h3>
+        <h3>Future work</h3>
         <ul>
-          <li>Run larger-scale evaluations under a bigger token budget</li>
-          <li>Use richer diagnostic labels to drive more targeted reflection</li>
-          <li>Extend the framework from retrieval-only tasks to heterogeneous tool chains</li>
+          <li>
+            Run larger-scale experiments on the full HotpotQA benchmark if no token limits,
+            this may help to have a more comprehensive evaluation of system's performance.
+          </li>
+          <li>
+            Develop more structured diagnostic features for reflection, so that the agent can distinguish between
+            different failure types such as missing evidence, weak queries, or incomplete reasoning.
+          </li>
+          <li>
+            Extend the framework beyond retrieval-only settings and study how similar reflection mechanisms
+            interact with other external tools in more complex tool-use agents.
+          </li>
         </ul>
       </div>
     </div>
-
+  
     <div class="callout">
-      <div class="small-title">So what?</div>
+      <div class="small-title">Takeaway</div>
       <p>
-        Our results suggest that simple reflection and evaluation mechanisms can make search-based reasoning agents more
-        reliable without retraining the backbone model. That makes this line of work practical for future assistants
-        that must combine reasoning with external tools under uncertainty.
+        Overall, our experiments suggest that relatively lightweight reflection and verification steps
+        can improve the behavior of search-based reasoning agents. Rather than retraining the underlying
+        model, those small changes which checks evidence and revises its search strategy can lead to
+        more reliable multi-hop reasoning.
       </p>
     </div>
   </section>
@@ -1012,37 +1201,58 @@
       <div class="team-card">
         <h3>Arshia Vadhani</h3>
         <ul>
-          <li>Worked on Phase 1 pipeline components including a basic judge and reflection prompting for Gate 3</li>
-          <li>Collaborated on updating Gate 3 behavior to improve overall accuracy</li>
-          <li>Contributed to the report discussion of judge, reflect, and refine integrations</li>
+          <li> Attempted to implement components for the Phase 1 pipeline, including a basic judge
+            and reflection prompting function for content refinement (Gate 3).
+            </li>
+          <li>Collaborated with Joyce to correct and update the Gate 3 functions to improve overall accuracy and ensure the generated answers met the required output format.
+          </li>
+          <li>Contributed to the report by documenting the design and implementation of Gate
+            3's judge, reflect, and refine components.</li>
+          <li>Contributed to the Discussion section, summarizing results, outlining system limitations, and proposing future improvements to the agent.</li>
+          <li>Contributed to the final project poster, working on the domain introduction and
+            contextual background.</li>
         </ul>
       </div>
       <div class="team-card">
         <h3>Megha Kataki</h3>
         <ul>
-          <li>Implemented the initial judge function for Gate 1</li>
-          <li>Explored where retrieval judgment should be placed in the pipeline</li>
-          <li>Helped document the introduction and overall project framing</li>
+          <li>Implemented the initial judge function (Gate 1), determining where document-level
+          judgments should occur within the pipeline.</li>
+          <li>Ensured that each document retrieval call was evaluated properly, first using a heuristicbased evaluation approach and later transitioning to a Large Reasoning Model (LRM)
+          approach.</li>
+          <li>Experimented with different judgment and reflection strategies and ran full dataset
+          evaluations to improve the final performance metrics.</li>
+          <li>Contributed to the Introduction section of the report.</li>
+            <li>Managed report formatting in Overleaf and migrated the document from Google
+          Docs to Overleaf.</li>
+          <li>Contributed to the design of the project poster and authored the following sections:
+          Data, Methods, Qualitative Results, Quantitative Results, Conclusion, Impact, and
+          References.</li>
         </ul>
       </div>
       <div class="team-card">
         <h3>Joyce Lu</h3>
         <ul>
-          <li>Implemented key Phase 1 components, including retrieval-side and extraction-side control logic</li>
-          <li>Led refinement of the final architecture after qualitative log analysis</li>
-          <li>Contributed to the technical report and integration across modules</li>
+          <li>Implemented multiple components for the Phase 1 pipeline, including the Retrieval
+          Judge and Reflection module (Gate 1), the Hallucination Detection module, the Extraction Refinement Loop, and the Content Judge and Reflection module (Gate 2).</li>
+          <li>Led architectural refinements in Phase 2 by identifying bottlenecks in the pipeline
+          (Gate 1 and Gate 3) and optimizing system performance by refining the Content
+          Judge and Reflection logic (Gate 2).</li>
+          <li>Contributed to the Methods section of the report, documenting the baseline framework and the iterative development process across Phase 1 and Phase 2.</li>
+          <li>Conducted the final evaluation on the HotpotQA dataset and contributed to the Results section documenting both quantitative and qualitative findings.</li>
         </ul>
       </div>
       <div class="team-card">
         <h3>Jiaxin Yang</h3>
         <ul>
-          <li>Worked on reflection design, content framing, and website/report communication</li>
-          <li>Helped refine project narrative around failure modes, iteration, and final improvements</li>
-          <li>Contributed written sections including summary-oriented project communication</li>
+          <li>Implemented the initial reflective functions (Gate 1), helped to refine the prompt organization and reflective reasoning in Phase 1. Merging with Megha's judge function and trying a heuristic approach for evaluation.</li>
+          <li>Contributed to the reports abstract section. Summarizing the overview and report 1's takeaways and improvements.</li>
+          <li>Contributed to the conclusion section of the report. Summarizing limitations, future works, and improvements of the agent.</li>
+          <li>Contributed to the project website design and implementation.</li>
         </ul>
       </div>
     </div>
-    <p class="subtle" style="margin-top: 0.9rem;">Kun Zhou is listed as a team member above; add contribution details here once you confirm the final wording you want to use on the site.</p>
+    
   </section>
 
   <section id="links">
@@ -1051,29 +1261,42 @@
       <div class="link-card">
         <h3>Code</h3>
         <p><a href="https://github.com/joycellu/tooluse-search-agent.git" target="_blank" rel="noopener noreferrer">GitHub Repository</a></p>
-        <p class="subtle">Implementation of the baseline, reflection modules, search pipeline, and evaluation scripts.</p>
+        <!-- <p class="subtle">Implementation of the baseline, reflection modules, search pipeline, and evaluation scripts.</p> -->
       </div>
       <div class="link-card">
         <h3>Report</h3>
-        <p><a href="DSC180B Quarter 2 Report.pdf" target="_blank" rel="noopener noreferrer">Quarter 2 Report (PDF)</a></p>
-        <p class="subtle">Project framing, architecture evolution, evaluation setup, quantitative results, and qualitative case analysis.</p>
+        <p><a href="Jiaxin_code/report.pdf" target="_blank" rel="noopener noreferrer">Final Report (PDF)</a></p>
+        <!-- <p class="subtle">Project framing, architecture evolution, evaluation setup, quantitative results, and qualitative case analysis.</p> -->
       </div>
       <div class="link-card">
-        <h3>Reproducibility Notes</h3>
-        <p>Backbone model: Qwen2.5-3B-Instruct</p>
-        <p>External tools: Search API + Jina page parsing</p>
+        <h3>Poster</h3>
+        <p><a href="Jiaxin_code/poster.pdf" target="_blank" rel="noopener noreferrer">Project Poster (PDF)</a></p>
+        <!-- <p class="subtle">words here</p> -->
       </div>
       <div class="link-card">
-        <h3>Final Deliverables</h3>
-        <p>Add your final poster, final report, and demo link here when they are ready.</p>
+        <h3>Original Search-o1 Repository</h3>
+        <p><a href="https://github.com/RUC-NLPIR/Search-o1.git" target="_blank" rel="noopener noreferrer">GitHub Repository</a></p>
       </div>
     </div>
   </section>
 
-  <div class="footer-note">
-    Built for DSC 180B. This website summarizes the project story, architecture changes, and current evaluation results in a form that is readable for both technical reviewers and external audiences.
-  </div>
-</div>
+  <footer class="footer-note" style="margin-top:2.4rem; padding:1.2rem 0 0.6rem; border-top:1px solid #e5e7eb; color:#475569; font-size:0.98rem;">
+    <h3 style="font-size:1.08rem; font-weight:700; margin-bottom:0.6rem;">References</h3>
+    <ol style="padding-left:1.4rem; line-height:1.8;">
+      <li>
+        Li, Xiaoxi, Guanting Dong, Jiajie Jin, Yuyao Zhang, Yujia Zhou, Yutao Zhu, Peitian Zhang, and Zhicheng Dou. 2025.
+        &ldquo;Search-o1: Agentic Search-Enhanced Large Reasoning Models.&rdquo;
+      </li>
+      <li>
+        Yang, An, Baosong Yang, Binyuan Hui, Bo Zheng, Bowen Yu, Chang Zhou, Chengpeng Li, Chengyuan Li, Dayiheng Liu, Fei Huang, Guanting Dong, Haoran Wei, Huan Lin, Jialong Tang, and ... 2024.
+        &ldquo;Qwen2 Technical Report.&rdquo;
+      </li>
+      <li>
+        Yang, Zhilin, Peng Qi, Saizheng Zhang, Yoshua Bengio, William W. Cohen, Ruslan Salakhutdinov, and Christopher D. Manning. 2018.
+        &ldquo;HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering.&rdquo; <i>arXiv preprint arXiv:1809.09600.</i> <a href="https://arxiv.org/abs/1809.09600" target="_blank" rel="noopener noreferrer">[Link]</a>
+      </li>
+    </ol>
+  </footer>
 
 <script>
   function toggleMenu() {
